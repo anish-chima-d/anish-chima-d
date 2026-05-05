@@ -1,0 +1,29 @@
+2026-05-04 09:21:47.102: [INFO] VisibilityChanged: 0
+2026-05-04 09:21:47.120: [INFO] BookmarkModelLoaded, ids_reassigned: 0
+2026-05-04 09:21:47.120: [INFO] OnDoneLoading sync enabled: 0
+2026-05-04 09:21:47.121: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 0
+2026-05-04 09:21:47.428: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 3
+2026-05-04 09:21:47.432: [INFO] Primary account changed.
+2026-05-04 09:21:47.432: [INFO] OnPrimaryAccountChanged PrimaryAccountChangeEvent::Type::kSet
+2026-05-04 09:21:47.435: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 3
+2026-05-04 09:21:47.738: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 3
+2026-05-04 09:22:12.472: [INFO] VisibilityChanged: 0
+2026-05-04 09:22:12.486: [INFO] BookmarkModelLoaded, ids_reassigned: 0
+2026-05-04 09:22:12.486: [INFO] OnDoneLoading sync enabled: 0
+2026-05-04 09:22:12.779: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 3
+2026-05-04 09:23:13.132: [INFO] VisibilityChanged: 0
+2026-05-04 09:23:13.146: [INFO] BookmarkModelLoaded, ids_reassigned: 0
+2026-05-04 09:23:13.146: [INFO] OnDoneLoading sync enabled: 0
+2026-05-04 09:23:13.299: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 3
+2026-05-04 09:23:14.815: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 3
+2026-05-04 09:23:14.818: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 3
+2026-05-04 09:23:14.821: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 5
+2026-05-04 09:23:14.824: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 5
+2026-05-04 09:23:15.598: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 5
+2026-05-04 09:23:16.214: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 5
+2026-05-04 09:23:16.217: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 6
+2026-05-04 09:23:16.410: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 6
+2026-05-04 09:23:16.411: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 6
+2026-05-04 09:23:16.412: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 6
+2026-05-04 09:23:16.413: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 6
+2026-05-04 09:23:16.938: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 6

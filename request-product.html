@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Emergency Product Request | Archha Grocery</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+
+<body data-page="request">
+  <div class="topbar">Need something urgently? Send an emergency product request and the store team can source it.</div>
+  <nav class="nav" aria-label="Main navigation">
+    <a class="brand" href="index.html"><span class="brand-mark">A</span>Archha<span>Grocery</span></a>
+    <div class="nav-links">
+      <a href="index.html" data-nav="home">Home</a>
+      <a href="shop.html" data-nav="shop">Shop</a>
+      <a href="festival.html" data-nav="festival">Value Basket</a>
+      <a href="request-product.html" data-nav="request">Request Product</a>
+      <a href="orders.html" data-nav="orders">Orders</a>
+      <a href="contact.html" data-nav="contact">Contact</a>
+    </div>
+    <form class="nav-search" data-nav-search>
+      <input type="search" name="q" placeholder="Search groceries..." aria-label="Search products" />
+      <button type="submit" aria-label="Search">Go</button>
+    </form>
+    <div class="nav-actions">
+      <a class="icon-btn" href="orders.html" aria-label="View orders">Orders</a>
+      <a class="cart-btn" href="cart.html">Cart <span data-cart-count>0</span></a>
+    </div>
+  </nav>
+
+  <main>
+    <section class="page-hero compact">
+      <div class="page-hero-inner">
+        <div class="kicker">Emergency request</div>
+        <h1>Request a product the store does not have yet.</h1>
+        <p>Customers can ask for urgent groceries, medicine-adjacent household needs, baby products, event supplies, or out-of-stock items. The request is saved locally and sent to the backend demo when available.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="request-layout">
+        <form class="form" id="productRequestForm">
+          <div class="form-grid">
+            <div class="field">
+              <label for="requestName">Your name</label>
+              <input id="requestName" name="name" required placeholder="Customer name" />
+            </div>
+            <div class="field">
+              <label for="requestPhone">Mobile number</label>
+              <input id="requestPhone" name="phone" required pattern="[0-9]{10}" maxlength="10" inputmode="numeric" placeholder="10 digit mobile" />
+            </div>
+            <div class="field full">
+              <label for="requestProduct">Product needed</label>
+              <input id="requestProduct" name="productName" required placeholder="Example: baby formula, glucose biscuits, sanitizer, rice brand" />
+            </div>
+            <div class="field">
+              <label for="requestCategory">Category</label>
+              <select id="requestCategory" name="category">
+                <option>Grocery</option>
+                <option>Baby care</option>
+                <option>Health and hygiene</option>
+                <option>Personal care</option>
+                <option>Home cleaning</option>
+                <option>Event or bulk supply</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="requestUrgency">Urgency</label>
+              <select id="requestUrgency" name="urgency">
+                <option>Emergency - need today</option>
+                <option>High - within 24 hours</option>
+                <option>Normal - this week</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="requestQty">Quantity</label>
+              <input id="requestQty" name="quantity" required placeholder="Example: 2 packs, 5 kg, 1 box" />
+            </div>
+            <div class="field">
+              <label for="requestBudget">Expected budget</label>
+              <input id="requestBudget" name="budget" placeholder="Optional" />
+            </div>
+            <div class="field full">
+              <label for="requestAddress">Delivery area</label>
+              <textarea id="requestAddress" name="address" required placeholder="Area, landmark, delivery notes"></textarea>
+            </div>
+            <div class="field full">
+              <label for="requestNotes">Extra details</label>
+              <textarea id="requestNotes" name="notes" placeholder="Brand preference, substitutes allowed, why it is urgent"></textarea>
+            </div>
+            <div class="field full">
+              <button type="submit">Send Emergency Request</button>
+            </div>
+          </div>
+        </form>
+
+        <aside class="cart-panel">
+          <h2>Request desk</h2>
+          <p class="section-text">Use this for products that are out of stock, not listed, or needed urgently. The team can call back, suggest substitutes, or add the requested item to the catalog later.</p>
+          <div class="request-status-list" id="productRequestList"></div>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">Copyright 2026 Archha Grocery. Fresh daily essentials.</footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="assets/api.js"></script>
+  <script src="assets/site.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,321 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel | Archha Grocery</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+
+<body class="admin-page" data-page="admin">
+  <div class="topbar admin-topbar">Admin demo: API localhost:5000, PIN 9999.</div>
+  <nav class="nav admin-nav" aria-label="Admin navigation">
+    <a class="brand" href="index.html"><span class="brand-mark">A</span>Archha<span>Admin</span></a>
+    <div class="nav-links">
+      <a href="index.html">Storefront</a>
+      <a href="shop.html">Shop</a>
+      <a href="cart.html">Cart</a>
+      <a href="contact.html">Contact</a>
+    </div>
+    <div class="nav-actions">
+      <a class="cart-btn admin-store-link" href="index.html">View Store</a>
+      <button class="cart-btn hidden" type="button" id="adminLogoutBtn">Logout</button>
+    </div>
+  </nav>
+
+  <main class="admin-main">
+    <section class="admin-login-screen" id="adminLoginScreen">
+      <div class="admin-login-copy">
+        <div class="kicker">Admin command center</div>
+        <h1>Products, orders, and enquiries.</h1>
+        <p>Archha Admin keeps the ecommerce demo tidy with a focused product editor, live operational tables, and quick status controls for daily store work.</p>
+        <div class="admin-login-metrics" aria-label="Admin capabilities">
+          <div>
+            <strong>Catalog</strong>
+            <span>Create products, prices, packs, and aisle details.</span>
+          </div>
+          <div>
+            <strong>Orders</strong>
+            <span>Move purchases through packing, delivery, and completion.</span>
+          </div>
+          <div>
+            <strong>Enquiries</strong>
+            <span>Track customer requests from new lead to closed follow-up.</span>
+          </div>
+        </div>
+      </div>
+
+      <form class="form auth-card admin-login-card" id="adminLoginForm">
+        <div class="admin-form-title">
+          <span class="admin-title-chip">PIN</span>
+          <div>
+            <h2>Open Admin Panel</h2>
+            <p>Use the backend demo credentials.</p>
+          </div>
+        </div>
+        <div class="field">
+          <label for="adminPin">Admin PIN</label>
+          <input id="adminPin" name="pin" required inputmode="numeric" autocomplete="one-time-code" placeholder="9999" />
+        </div>
+        <div class="field">
+          <label for="adminApiBase">Backend API</label>
+          <input id="adminApiBase" name="apiBase" type="url" value="http://localhost:5000/api" />
+        </div>
+        <button type="submit">Open Dashboard</button>
+      </form>
+    </section>
+
+    <section class="admin-workbench hidden" id="adminPanel">
+      <aside class="admin-sidebar" aria-label="Admin sections">
+        <div class="admin-sidebar-brand">
+          <span class="brand-mark">A</span>
+          <div>
+            <strong>Archha Admin</strong>
+            <span>Store operations</span>
+          </div>
+        </div>
+
+        <div class="admin-tabs" role="tablist" aria-label="Admin panel tabs">
+          <button class="admin-nav-tab active" type="button" data-admin-tab="products">
+            <span>Products</span>
+            <strong id="productTabCount">0</strong>
+          </button>
+          <button class="admin-nav-tab" type="button" data-admin-tab="orders">
+            <span>Orders</span>
+            <strong id="orderTabCount">0</strong>
+          </button>
+          <button class="admin-nav-tab" type="button" data-admin-tab="enquiries">
+            <span>Enquiries</span>
+            <strong id="enquiryTabCount">0</strong>
+          </button>
+          <button class="admin-nav-tab" type="button" data-admin-tab="tracker">
+            <span>Map & Tracker</span>
+            <strong id="trackerTabCount">0</strong>
+          </button>
+        </div>
+
+        <div class="admin-sidebar-note">
+          <span>API endpoint</span>
+          <strong id="adminApiLabel">localhost:5000/api</strong>
+          <p>Session token is stored in this browser only.</p>
+        </div>
+      </aside>
+
+      <div class="admin-workspace">
+        <header class="admin-workspace-head">
+          <div>
+            <div class="kicker">Live dashboard</div>
+            <h1>Admin Panel</h1>
+            <p>Manage Archha Grocery inventory, customer orders, and contact enquiries.</p>
+          </div>
+          <div class="admin-header-actions">
+            <button class="btn admin-secondary-button" type="button" id="adminRefreshBtn">Refresh</button>
+            <a class="btn admin-dark-button" href="shop.html">View Shop</a>
+          </div>
+        </header>
+
+        <div class="admin-stats admin-kpis" id="adminStats"></div>
+
+        <section class="admin-section" id="admin-products">
+          <div class="admin-section-heading">
+            <div>
+              <div class="kicker">Catalog</div>
+              <h2>Product Management</h2>
+            </div>
+            <button class="btn admin-secondary-button" type="button" id="adminNewProductBtn">New Product</button>
+          </div>
+
+          <div class="admin-product-layout">
+            <form class="form admin-product-form" id="adminProductForm">
+              <div class="admin-form-title">
+                <span class="admin-title-chip">SKU</span>
+                <div>
+                  <h3 id="adminProductFormTitle">Create Product</h3>
+                  <p id="adminProductFormHint">Add a product to the backend catalog.</p>
+                </div>
+              </div>
+              <input type="hidden" id="adminProductId" name="id" />
+              <div class="form-grid">
+                <div class="field">
+                  <label for="adminProductName">Name</label>
+                  <input id="adminProductName" name="name" required placeholder="Product name" />
+                </div>
+                <div class="field">
+                  <label for="adminProductPrice">Price</label>
+                  <input id="adminProductPrice" name="price" required type="number" min="1" placeholder="149" />
+                </div>
+                <div class="field">
+                  <label for="adminProductFragrance">Aisle</label>
+                  <input id="adminProductFragrance" name="fragrance" placeholder="Fresh Produce" />
+                </div>
+                <div class="field">
+                  <label for="adminProductType">Category</label>
+                  <select id="adminProductType" name="type">
+                    <option value="produce">Produce</option>
+                    <option value="pantry">Pantry</option>
+                    <option value="dairy">Dairy</option>
+                    <option value="snacks">Snacks</option>
+                    <option value="home">Home care</option>
+                    <option value="basket">Basket</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="adminProductTag">Tag</label>
+                  <input id="adminProductTag" name="tag" placeholder="Popular" />
+                </div>
+                <div class="field">
+                  <label for="adminProductIcon">Label Icon</label>
+                  <input id="adminProductIcon" name="icon" maxlength="2" placeholder="S" />
+                </div>
+                <div class="field">
+                  <label for="adminProductPack">Pack</label>
+                  <input id="adminProductPack" name="pack" placeholder="3 kg mixed pack" />
+                </div>
+                <div class="field full">
+                  <label for="adminProductBurnTime">Shelf Life</label>
+                  <input id="adminProductBurnTime" name="burnTime" placeholder="Best within 3 days" />
+                </div>
+                <div class="field">
+                  <label for="adminProductRating">Rating</label>
+                  <input id="adminProductRating" name="rating" placeholder="4.8" />
+                </div>
+                <div class="field full">
+                  <label for="adminProductUse">Use</label>
+                  <input id="adminProductUse" name="use" placeholder="Daily cooking and family restock" />
+                </div>
+                <div class="field full">
+                  <label for="adminProductSub">Short Detail</label>
+                  <input id="adminProductSub" name="sub" placeholder="Vegetables, fruit, rice, and dairy" />
+                </div>
+                <div class="field full">
+                  <label for="adminProductDescription">Description</label>
+                  <textarea id="adminProductDescription" name="description" placeholder="Product description"></textarea>
+                </div>
+                <div class="field full admin-form-actions">
+                  <button type="submit" id="adminProductSubmitBtn">Save Product</button>
+                  <button class="admin-ghost-button" type="button" id="adminProductResetBtn">Clear</button>
+                </div>
+              </div>
+            </form>
+
+            <div class="admin-table-panel">
+              <div class="admin-table-toolbar">
+                <div>
+                  <h3>Product Catalog</h3>
+                  <p id="adminProductSummary">Loading products...</p>
+                </div>
+                <div class="admin-table-filters">
+                  <input class="search" id="adminProductSearch" type="search" placeholder="Search products..." />
+                  <select class="select" id="adminProductTypeFilter" aria-label="Filter products by category">
+                    <option value="all">All categories</option>
+                    <option value="produce">Produce</option>
+                    <option value="pantry">Pantry</option>
+                    <option value="dairy">Dairy</option>
+                    <option value="snacks">Snacks</option>
+                    <option value="home">Home care</option>
+                    <option value="basket">Basket</option>
+                  </select>
+                </div>
+              </div>
+              <div class="admin-table-wrap">
+                <table class="admin-table" id="adminProductsTable"></table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="admin-section hidden" id="admin-orders">
+          <div class="admin-section-heading">
+            <div>
+              <div class="kicker">Fulfillment</div>
+              <h2>Order Management</h2>
+            </div>
+            <select class="select admin-status-filter" id="adminOrderStatusFilter" aria-label="Filter orders by status">
+              <option value="all">All orders</option>
+              <option value="PLACED">Placed</option>
+              <option value="PACKED">Packed</option>
+              <option value="OUT_FOR_DELIVERY">Out for delivery</option>
+              <option value="DELIVERED">Delivered</option>
+              <option value="CANCELLED">Cancelled</option>
+            </select>
+          </div>
+          <div class="admin-table-panel">
+            <div class="admin-table-toolbar">
+              <div>
+                <h3>Customer Orders</h3>
+                <p id="adminOrderSummary">Loading orders...</p>
+              </div>
+            </div>
+            <div class="admin-table-wrap">
+              <table class="admin-table" id="adminOrdersTable"></table>
+            </div>
+          </div>
+        </section>
+
+        <section class="admin-section hidden" id="admin-enquiries">
+          <div class="admin-section-heading">
+            <div>
+              <div class="kicker">Customer care</div>
+              <h2>Enquiry Management</h2>
+            </div>
+            <select class="select admin-status-filter" id="adminEnquiryStatusFilter" aria-label="Filter enquiries by status">
+              <option value="all">All enquiries</option>
+              <option value="NEW">New</option>
+              <option value="CONTACTED">Contacted</option>
+              <option value="CLOSED">Closed</option>
+            </select>
+          </div>
+          <div class="admin-table-panel">
+            <div class="admin-table-toolbar">
+              <div>
+                <h3>Customer Enquiries</h3>
+                <p id="adminEnquirySummary">Loading enquiries...</p>
+              </div>
+            </div>
+            <div class="admin-table-wrap">
+              <table class="admin-table" id="adminEnquiriesTable"></table>
+            </div>
+          </div>
+        </section>
+
+        <section class="admin-section hidden" id="admin-tracker">
+          <div class="admin-section-heading">
+            <div>
+              <div class="kicker">Delivery control</div>
+              <h2>Map & Tracker</h2>
+            </div>
+            <select class="select admin-status-filter" id="adminTrackerOrderSelect" aria-label="Choose order to track">
+              <option value="">Loading orders...</option>
+            </select>
+          </div>
+
+          <div class="admin-tracker-layout">
+            <div class="admin-map-panel">
+              <div class="admin-map-head">
+                <div>
+                  <h3 id="adminTrackerMapTitle">Delivery Map</h3>
+                  <p id="adminTrackerMapSub">Store route overview</p>
+                </div>
+                <span class="admin-badge info" id="adminTrackerStatusBadge">Preview</span>
+              </div>
+              <div class="admin-route-map" id="adminRouteMap" aria-label="Delivery route map preview"></div>
+            </div>
+
+            <div class="admin-tracker-panel">
+              <div id="adminTrackerDetails"></div>
+              <div class="admin-timeline" id="adminTrackerTimeline"></div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">Copyright 2026 Archha Grocery. Admin demo.</footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="assets/api.js"></script>
+  <script src="assets/admin.js"></script>
+</body>
+
+</html>

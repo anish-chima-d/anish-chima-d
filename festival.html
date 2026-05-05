@@ -1,0 +1,84 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Value Basket | Archha Grocery</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+
+<body data-page="festival">
+  <div class="topbar">Fresh deal: free delivery above Rs. 499 and 10% off family grocery baskets this week.</div>
+  <nav class="nav" aria-label="Main navigation">
+    <a class="brand" href="index.html"><span class="brand-mark">A</span>Archha<span>Grocery</span></a>
+    <div class="nav-links">
+      <a href="index.html" data-nav="home">Home</a>
+      <a href="shop.html" data-nav="shop">Shop</a>
+      <a href="festival.html" data-nav="festival">Value Basket</a>
+      <a href="about.html" data-nav="about">About</a>
+      <a href="request-product.html" data-nav="request">Request Product</a>
+      <a href="contact.html" data-nav="contact">Contact</a>
+      <a href="login.html" data-nav="login">Login</a>
+    </div>
+    <form class="nav-search" data-nav-search>
+      <input type="search" name="q" placeholder="Search groceries..." aria-label="Search products" />
+      <button type="submit" aria-label="Search">Go</button>
+    </form>
+    <div class="nav-actions">
+      <a class="icon-btn" href="shop.html" aria-label="Search products">Go</a>
+      <a class="cart-btn" href="cart.html">Cart <span data-cart-count>0</span></a>
+    </div>
+  </nav>
+
+  <main>
+    <section class="page-hero">
+      <div class="page-hero-inner">
+        <div class="kicker">Weekly value stock</div>
+        <h1>Complete grocery baskets for family restocks.</h1>
+        <p>A ready bundle for weekly cooking, breakfast, snacks, cleaning refills, apartment orders, and office pantry needs.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="offer">
+        <div>
+          <div class="kicker">Archha Weekly Basket</div>
+          <h2>Everything needed for a practical home grocery setup.</h2>
+          <p>Each basket includes fresh vegetables, fruit, rice, dal, oil, dairy, snacks, and cleaning refills. You can expand this page later with real basket photos and delivery details.</p>
+          <div class="offer-list">
+            <span>Fresh vegetables and fruits for cooking and breakfast</span>
+            <span>Rice, dal, oil, and core staples for the week</span>
+            <span>Bulk-ready options for families, offices, and apartments</span>
+          </div>
+        </div>
+        <div class="bundle">
+          <strong>Rs. 999</strong>
+          <span>Starter weekly grocery basket. Limited stock message can be updated from this page.</span>
+          <div class="actions"><button class="btn btn-primary" type="button" onclick="addBundle()">Add Value Basket</button></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <div class="kicker">Bundle options</div>
+          <h2>Designed for common buying needs.</h2>
+        </div>
+      </div>
+      <div class="grid-3">
+        <div class="card"><span class="card-icon">1</span><h3>Home Grocery Basket</h3><p>Small weekly refill for daily cooking and family snacks.</p></div>
+        <div class="card"><span class="card-icon">2</span><h3>Family Value Basket</h3><p>Staples, produce, dairy, and snacks for bigger households.</p></div>
+        <div class="card"><span class="card-icon">3</span><h3>Office Pantry Supply</h3><p>Bulk-ready tea, snacks, cleaning, and pantry options for recurring orders.</p></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">Copyright 2026 Archha Grocery. Fresh daily essentials.</footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="assets/api.js"></script>
+  <script src="assets/site.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,29 @@
+[
+  {
+    "id": "NOTE-196760",
+    "phone": "9831479574",
+    "title": "Review saved",
+    "message": "Your 5/5 review was added.",
+    "type": "success",
+    "read": false,
+    "createdAt": "2026-05-04T15:23:16.760Z"
+  },
+  {
+    "id": "NOTE-260822",
+    "phone": "9831479574",
+    "title": "Order placed",
+    "message": "Order ARCHHA-260822 was placed successfully.",
+    "type": "success",
+    "read": false,
+    "createdAt": "2026-05-04T15:24:20.822Z"
+  },
+  {
+    "id": "NOTE-311524",
+    "phone": "9831479574",
+    "title": "Order cancelled",
+    "message": "Order ARCHHA-260822 has been cancelled.",
+    "type": "error",
+    "read": false,
+    "createdAt": "2026-05-04T15:25:11.524Z"
+  }
+]

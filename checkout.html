@@ -1,0 +1,116 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Checkout | Archha Grocery</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+
+<body data-page="cart">
+  <div class="topbar">Cash on delivery demo checkout. Connect payment gateway in the next launch phase.</div>
+  <nav class="nav" aria-label="Main navigation">
+    <a class="brand" href="index.html"><span class="brand-mark">A</span>Archha<span>Grocery</span></a>
+    <div class="nav-links">
+      <a href="index.html" data-nav="home">Home</a>
+      <a href="shop.html" data-nav="shop">Shop</a>
+      <a href="festival.html" data-nav="festival">Value Basket</a>
+      <a href="about.html" data-nav="about">About</a>
+      <a href="request-product.html" data-nav="request">Request Product</a>
+      <a href="contact.html" data-nav="contact">Contact</a>
+      <a href="login.html" data-nav="login">Login</a>
+    </div>
+    <form class="nav-search" data-nav-search>
+      <input type="search" name="q" placeholder="Search groceries..." aria-label="Search products" />
+      <button type="submit" aria-label="Search">Go</button>
+    </form>
+    <div class="nav-actions">
+      <a class="icon-btn" href="shop.html" aria-label="Search products">Go</a>
+      <a class="cart-btn" href="cart.html">Cart <span data-cart-count>0</span></a>
+    </div>
+  </nav>
+
+  <main>
+    <section class="page-hero compact">
+      <div class="page-hero-inner">
+        <div class="kicker">Checkout</div>
+        <h1>Fill delivery address and place order.</h1>
+        <p>When backend login is active, this checkout saves the order through the API. Otherwise it uses the browser fallback for demo testing.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="checkout-layout">
+        <form class="form" id="checkoutForm">
+          <div class="form-grid">
+            <div class="field">
+              <label for="fullName">Full name</label>
+              <input id="fullName" name="fullName" required placeholder="Customer name" />
+            </div>
+            <div class="field">
+              <label for="phone">Mobile number</label>
+              <input id="phone" name="phone" required pattern="[0-9]{10}" maxlength="10" placeholder="10 digit mobile" />
+            </div>
+            <div class="field full">
+              <label for="address">Full delivery address</label>
+              <textarea id="address" name="address" required placeholder="House number, street, area"></textarea>
+            </div>
+            <div class="field">
+              <label for="city">City</label>
+              <input id="city" name="city" required placeholder="City" />
+            </div>
+            <div class="field">
+              <label for="pincode">Pincode</label>
+              <input id="pincode" name="pincode" required pattern="[0-9]{6}" maxlength="6" placeholder="6 digit pincode" />
+            </div>
+            <div class="field">
+              <label for="payment">Payment method</label>
+              <select id="payment" name="payment">
+                <option>Cash on delivery</option>
+                <option>UPI on delivery</option>
+                <option>UPI QR</option>
+                <option>PhonePe</option>
+                <option>Google Pay</option>
+                <option>Paytm</option>
+                <option>Debit card</option>
+                <option>Credit card</option>
+                <option>Net banking</option>
+                <option>Wallet</option>
+                <option>EMI</option>
+                <option>Buy now pay later</option>
+                <option>Bank transfer</option>
+                <option>Gift card</option>
+                <option>Store credit</option>
+                <option>RuPay card</option>
+                <option>International card</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="notes">Delivery notes</label>
+              <input id="notes" name="notes" placeholder="Optional" />
+            </div>
+            <div class="field full">
+              <button type="submit">Place Order</button>
+            </div>
+          </div>
+        </form>
+
+        <aside class="cart-panel">
+          <h2>Your order</h2>
+          <div id="checkoutItems" class="checkout-items"></div>
+          <div id="checkoutSummary"></div>
+          <a class="btn btn-primary checkout-link" href="cart.html">Edit Cart</a>
+        </aside>
+      </div>
+      <div id="orderConfirmation"></div>
+    </section>
+  </main>
+
+  <footer class="footer">Copyright 2026 Archha Grocery. Fresh daily essentials.</footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="assets/api.js"></script>
+  <script src="assets/site.js"></script>
+</body>
+
+</html>

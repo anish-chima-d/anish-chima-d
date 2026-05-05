@@ -1,0 +1,57 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Page Not Found | Archha Grocery</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+
+<body data-page="404">
+  <div class="topbar">The aisle you opened is not available. The grocery store is still ready.</div>
+  <nav class="nav" aria-label="Main navigation">
+    <a class="brand" href="index.html"><span class="brand-mark">A</span>Archha<span>Grocery</span></a>
+    <div class="nav-links">
+      <a href="index.html" data-nav="home">Home</a>
+      <a href="shop.html" data-nav="shop">Shop</a>
+      <a href="festival.html" data-nav="festival">Value Basket</a>
+      <a href="orders.html" data-nav="orders">Orders</a>
+      <a href="request-product.html" data-nav="request">Request Product</a>
+      <a href="contact.html" data-nav="contact">Contact</a>
+      <a href="login.html" data-nav="login">Login</a>
+    </div>
+    <form class="nav-search" data-nav-search>
+      <input type="search" name="q" placeholder="Search groceries..." aria-label="Search products" />
+      <button type="submit" aria-label="Search">Go</button>
+    </form>
+    <div class="nav-actions">
+      <a class="icon-btn" href="shop.html" aria-label="Search products">Go</a>
+      <a class="cart-btn" href="cart.html">Cart <span data-cart-count>0</span></a>
+    </div>
+  </nav>
+
+  <main>
+    <section class="not-found">
+      <div class="not-found-art" aria-hidden="true">
+        <span>4</span>
+        <div class="empty-illustration"></div>
+        <span>4</span>
+      </div>
+      <div class="kicker">Missing aisle</div>
+      <h1>This page is out of stock.</h1>
+      <p class="section-text">The link may be old, moved, or typed incorrectly. Head back to the grocery shelves and keep shopping.</p>
+      <div class="actions">
+        <a class="btn btn-dark" href="index.html">Go Home</a>
+        <a class="btn btn-primary" href="shop.html">Shop Groceries</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">Copyright 2026 Archha Grocery. Fresh daily essentials.</footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="assets/api.js"></script>
+  <script src="assets/site.js"></script>
+</body>
+
+</html>

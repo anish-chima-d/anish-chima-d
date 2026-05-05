@@ -1,0 +1,54 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Order Confirmation | Archha Grocery</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+
+<body data-page="orders">
+  <div class="topbar">Your grocery order has been saved. Keep the order ID for delivery follow-up.</div>
+  <nav class="nav" aria-label="Main navigation">
+    <a class="brand" href="index.html"><span class="brand-mark">A</span>Archha<span>Grocery</span></a>
+    <div class="nav-links">
+      <a href="index.html" data-nav="home">Home</a>
+      <a href="shop.html" data-nav="shop">Shop</a>
+      <a href="festival.html" data-nav="festival">Value Basket</a>
+      <a href="orders.html" data-nav="orders">Orders</a>
+      <a href="request-product.html" data-nav="request">Request Product</a>
+      <a href="contact.html" data-nav="contact">Contact</a>
+      <a href="login.html" data-nav="login">Login</a>
+    </div>
+    <form class="nav-search" data-nav-search>
+      <input type="search" name="q" placeholder="Search groceries..." aria-label="Search products" />
+      <button type="submit" aria-label="Search">Go</button>
+    </form>
+    <div class="nav-actions">
+      <a class="icon-btn" href="orders.html" aria-label="View orders">Orders</a>
+      <a class="cart-btn" href="cart.html">Cart <span data-cart-count>0</span></a>
+    </div>
+  </nav>
+
+  <main>
+    <section class="page-hero compact">
+      <div class="page-hero-inner">
+        <div class="kicker">Confirmation</div>
+        <h1>Order placed successfully.</h1>
+        <p>Review the saved order summary, delivery details, and next steps for your grocery basket.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="confirmation-layout" id="orderConfirmationDetail"></div>
+    </section>
+  </main>
+
+  <footer class="footer">Copyright 2026 Archha Grocery. Fresh daily essentials.</footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="assets/api.js"></script>
+  <script src="assets/site.js"></script>
+</body>
+
+</html>

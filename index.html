@@ -1,0 +1,127 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Archha Grocery sells fresh produce, pantry staples, dairy, snacks, personal care, and daily home essentials." />
+  <title>Archha Grocery | Fresh Daily Essentials</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+
+<body data-page="home">
+  <div class="welcome-animation" aria-hidden="true">
+    <div class="welcome-orbit">
+      <span class="welcome-item item-one"></span>
+      <span class="welcome-item item-two"></span>
+      <span class="welcome-item item-three"></span>
+      <span class="welcome-item item-four"></span>
+    </div>
+    <div class="welcome-basket">
+      <span></span><span></span><span></span>
+    </div>
+    <div class="welcome-text">
+      <strong>Welcome to Archha Grocery</strong>
+      <span>Fresh picks are rolling in</span>
+    </div>
+  </div>
+
+  <div class="topbar">Fresh deal: free delivery above Rs. 499 and 10% off family grocery baskets this week.</div>
+  <nav class="nav" aria-label="Main navigation">
+    <a class="brand" href="index.html"><span class="brand-mark">A</span>Archha<span>Grocery</span></a>
+    <div class="nav-links">
+      <a href="index.html" data-nav="home">Home</a>
+      <a href="shop.html" data-nav="shop">Shop</a>
+      <a href="festival.html" data-nav="festival">Value Basket</a>
+      <a href="about.html" data-nav="about">About</a>
+      <a href="request-product.html" data-nav="request">Request Product</a>
+      <a href="contact.html" data-nav="contact">Contact</a>
+      <a href="login.html" data-nav="login">Login</a>
+    </div>
+    <form class="nav-search" data-nav-search>
+      <input type="search" name="q" placeholder="Search groceries..." aria-label="Search products" />
+      <button type="submit" aria-label="Search">Go</button>
+    </form>
+    <div class="nav-actions">
+      <a class="icon-btn" href="shop.html" aria-label="Search products">Go</a>
+      <a class="cart-btn" href="cart.html">Cart <span data-cart-count>0</span></a>
+    </div>
+  </nav>
+
+  <main>
+    <section class="hero">
+      <div class="hero-inner">
+        <div>
+          <div class="eyebrow">Fresh groceries for busy homes</div>
+          <h1>Everything for today, delivered with tomorrow in mind.</h1>
+          <p class="hero-copy">Shop crisp vegetables, pantry staples, dairy, snacks, personal care, and ready value baskets made for fast family restocks and easy weekly planning.</p>
+          <div class="actions">
+            <a class="btn btn-primary" href="shop.html">Shop Bestsellers</a>
+            <a class="btn btn-outline" href="festival.html">View Value Baskets</a>
+          </div>
+        </div>
+        <div class="hero-visual" aria-hidden="true">
+          <div class="grocery-scene">
+            <div class="market-sun"></div>
+            <div class="delivery-arc"></div>
+            <div class="produce apple"></div>
+            <div class="produce leafy"></div>
+            <div class="produce bottle"></div>
+            <div class="produce grain"></div>
+            <div class="basket-base"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="stats" aria-label="Store promises">
+      <div class="stat"><strong>100%</strong><span>Handpicked daily essentials from trusted local suppliers</span></div>
+      <div class="stat"><strong>24h</strong><span>Fast dispatch for ready stock grocery products</span></div>
+      <div class="stat"><strong>Rs. 499</strong><span>Free delivery on eligible orders</span></div>
+      <div class="stat"><strong>7 days</strong><span>Easy returns on sealed pantry and home products</span></div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <div class="kicker">Shop by aisle</div>
+          <h2>Pick what the kitchen needs next.</h2>
+        </div>
+        <p class="section-text">Start with fresh produce, add pantry basics, grab dairy for the morning, and finish with snacks or household refills.</p>
+      </div>
+      <div class="grid-4">
+        <a class="card" href="shop.html"><span class="card-icon">F</span><h3>Fresh produce</h3><p>Vegetables and fruits for daily cooking.</p></a>
+        <a class="card" href="shop.html"><span class="card-icon">P</span><h3>Pantry staples</h3><p>Rice, atta, dal, oils, spices, and dry goods.</p></a>
+        <a class="card" href="shop.html"><span class="card-icon">D</span><h3>Dairy</h3><p>Milk, curd, paneer, butter, and breakfast basics.</p></a>
+        <a class="card" href="shop.html"><span class="card-icon">H</span><h3>Home care</h3><p>Cleaning, personal care, and household refills.</p></a>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="offer">
+        <div>
+          <div class="kicker">Weekly value basket</div>
+          <h2>Build a complete family grocery cart in one order.</h2>
+          <p>Bundle fresh vegetables, fruit, rice, atta, dal, oil, dairy, snacks, and cleaning refills for a smoother week at home.</p>
+          <div class="offer-list">
+            <span>Choose produce mix: cooking, salad, fruit, and breakfast</span>
+            <span>Family-size staples with clear pack sizes</span>
+            <span>Bulk enquiry support for apartments, offices, and stores</span>
+          </div>
+        </div>
+        <div class="bundle">
+          <strong>Rs. 999</strong>
+          <span>Starter weekly basket with vegetables, fruit, rice, dal, oil, dairy, snacks, and cleaning refill.</span>
+          <div class="actions"><a class="btn btn-primary" href="festival.html">See Basket Details</a></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">Copyright 2026 Archha Grocery. Fresh daily essentials.</footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="assets/api.js"></script>
+  <script src="assets/site.js"></script>
+</body>
+
+</html>

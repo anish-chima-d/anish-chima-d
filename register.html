@@ -1,0 +1,76 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Register | Archha Grocery</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+
+<body data-page="login">
+  <div class="topbar">Create a demo grocery account to save your cart details and track local orders.</div>
+  <nav class="nav" aria-label="Main navigation">
+    <a class="brand" href="index.html"><span class="brand-mark">A</span>Archha<span>Grocery</span></a>
+    <div class="nav-links">
+      <a href="index.html" data-nav="home">Home</a>
+      <a href="shop.html" data-nav="shop">Shop</a>
+      <a href="festival.html" data-nav="festival">Value Basket</a>
+      <a href="about.html" data-nav="about">About</a>
+      <a href="request-product.html" data-nav="request">Request Product</a>
+      <a href="contact.html" data-nav="contact">Contact</a>
+      <a href="login.html" data-nav="login">Login</a>
+    </div>
+    <form class="nav-search" data-nav-search>
+      <input type="search" name="q" placeholder="Search groceries..." aria-label="Search products" />
+      <button type="submit" aria-label="Search">Go</button>
+    </form>
+    <div class="nav-actions">
+      <a class="icon-btn" href="orders.html" aria-label="View orders">Orders</a>
+      <a class="cart-btn" href="cart.html">Cart <span data-cart-count>0</span></a>
+    </div>
+  </nav>
+
+  <main>
+    <section class="page-hero compact">
+      <div class="page-hero-inner">
+        <div class="kicker">Register</div>
+        <h1>Create your grocery account.</h1>
+        <p>This demo registration saves your profile in this browser only. Backend account creation can be connected later.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="auth-layout">
+        <form class="form auth-card" id="registerForm">
+          <div class="field">
+            <label for="registerName">Full name</label>
+            <input id="registerName" name="fullName" required placeholder="Customer name" />
+          </div>
+          <div class="field">
+            <label for="registerPhone">Mobile number</label>
+            <input id="registerPhone" name="phone" required pattern="[0-9]{10}" maxlength="10" inputmode="numeric" placeholder="10 digit mobile number" />
+          </div>
+          <div class="field">
+            <label for="registerCity">City</label>
+            <input id="registerCity" name="city" required placeholder="City" />
+          </div>
+          <div class="field">
+            <label for="registerArea">Area</label>
+            <input id="registerArea" name="area" placeholder="Delivery area" />
+          </div>
+          <button type="submit">Create Account</button>
+          <p class="summary-note">Already registered? <a href="login.html">Login with mobile OTP</a>.</p>
+        </form>
+        <div class="success-box hidden" id="registerStatus"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">Copyright 2026 Archha Grocery. Fresh daily essentials.</footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="assets/api.js"></script>
+  <script src="assets/site.js"></script>
+</body>
+
+</html>

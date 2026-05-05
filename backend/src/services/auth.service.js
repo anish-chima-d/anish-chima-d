@@ -41,10 +41,9 @@ async function requestOtp(phone) {
 
   return {
     phone,
-    message: smsResult.skipped ? "OTP generated for local development." : "OTP sent successfully.",
+    message: "OTP sent successfully.",
     provider: smsResult.provider,
-    expiresInSeconds: env.otpTtlMinutes * 60,
-    devOtp: env.nodeEnv === "production" ? undefined : otp
+    expiresInSeconds: env.otpTtlMinutes * 60
   };
 }
 

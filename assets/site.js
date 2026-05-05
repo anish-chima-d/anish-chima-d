@@ -1103,11 +1103,7 @@ function initPhoneLogin() {
     try {
       const result = await api.auth.requestOtp(phone);
       const expiryMinutes = Math.max(1, Math.round(Number(result.expiresInSeconds || 600) / 60));
-      setFormMessage(
-        phoneForm,
-        result.devOtp ? `Development OTP: ${result.devOtp}` : `OTP sent successfully. It expires in ${expiryMinutes} minutes.`,
-        "success"
-      );
+      setFormMessage(phoneForm, `OTP sent successfully. It expires in ${expiryMinutes} minutes.`, "success");
       showToast("OTP sent successfully.", "success");
       phoneForm.classList.add("hidden");
       otpForm.classList.remove("hidden");

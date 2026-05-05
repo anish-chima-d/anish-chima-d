@@ -28,6 +28,6 @@ Required production environment variables:
 OTP endpoints:
 
 - `POST /api/auth/request-otp` with `{ "phone": "9876543210" }`
-- `POST /api/auth/verify-otp` with `{ "phone": "9876543210", "otp": "123456" }`
+- `POST /api/auth/verify-otp` with `{ "phone": "9876543210", "otp": "OTP_FROM_SMS" }`
 
-In local development, if no SMS provider is configured, the API returns `devOtp` for testing. In production, configure an SMS provider; OTP values are never returned to the frontend.
+Configure an SMS provider before requesting OTPs. OTP values are never returned to the frontend.

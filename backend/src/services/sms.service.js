@@ -71,10 +71,6 @@ async function sendTwilioSms(phone, otp) {
 }
 
 async function sendOtpSms(phone, otp) {
-  if (env.nodeEnv !== "production" && !env.smsWebhookUrl && !env.smsApiKey && !env.twilioAccountSid) {
-    return { provider: "development", skipped: true };
-  }
-
   if (env.smsProvider === "fast2sms") return sendFast2Sms(phone, otp);
   if (env.smsProvider === "twilio") return sendTwilioSms(phone, otp);
   return sendWebhookSms(phone, otp);

@@ -11,6 +11,12 @@ function makeId(name) {
     .slice(0, 42) || `product-${Date.now()}`;
 }
 
+function optionalNumber(value) {
+  if (value === undefined || value === null || value === "") return "";
+  const number = Number(value);
+  return Number.isFinite(number) ? number : "";
+}
+
 async function login(pin) {
   if (!env.adminPin) throw new ApiError(500, "Admin PIN is not configured.");
   if (String(pin) !== env.adminPin) throw new ApiError(401, "Invalid admin PIN.");
@@ -61,7 +67,10 @@ async function createProduct(payload) {
     burnTime: payload.burnTime || "30 minutes",
     pack: payload.pack || "Standard pack",
     use: payload.use || "Daily cooking and family restock",
-    description: payload.description || payload.sub || "Product description"
+    description: payload.description || payload.sub || "Product description",
+    shopName: payload.shopName || "Archha partner shop",
+    shopLatitude: optionalNumber(payload.shopLatitude),
+    shopLongitude: optionalNumber(payload.shopLongitude)
   };
 
   products.push(product);
@@ -78,7 +87,9 @@ async function updateProduct(productId, payload) {
     ...products[index],
     ...payload,
     id: productId,
-    price: payload.price === undefined ? products[index].price : Number(payload.price)
+    price: payload.price === undefined ? products[index].price : Number(payload.price),
+    shopLatitude: optionalNumber(payload.shopLatitude),
+    shopLongitude: optionalNumber(payload.shopLongitude)
   };
   await writeJson("products.json", products);
   return products[index];

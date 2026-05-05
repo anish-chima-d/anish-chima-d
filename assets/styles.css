@@ -1008,6 +1008,71 @@ h3 {
   font-weight: 750;
 }
 
+.location-gate {
+  width: 100%;
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fffdf7;
+}
+
+.location-gate h2 {
+  margin-bottom: 8px;
+  font-size: 24px;
+}
+
+.location-gate p {
+  max-width: 560px;
+  margin-bottom: 18px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.wishlist-toggle {
+  width: 100%;
+  margin-top: 10px;
+}
+
+.profile-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.profile-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: white;
+}
+
+.profile-panel h2 {
+  margin: 4px 0 8px;
+  font-size: 24px;
+}
+
+.profile-panel p {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.profile-avatar {
+  display: grid;
+  width: 58px;
+  height: 58px;
+  place-items: center;
+  border-radius: 50%;
+  background: #fff2dc;
+  color: var(--saffron-dark);
+  font-size: 26px;
+  font-weight: 900;
+  flex: 0 0 auto;
+}
+
 .tab {
   min-height: 40px;
   padding: 0 14px;
@@ -2298,6 +2363,7 @@ a.product-name:hover {
   .admin-stats,
   .grid-4,
   .products,
+  .profile-grid,
   .grid-3 {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -2305,6 +2371,11 @@ a.product-name:hover {
   .page-hero {
     padding-top: 56px;
     padding-bottom: 46px;
+  }
+
+  .profile-panel {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
 
@@ -2327,6 +2398,10 @@ a.product-name:hover {
 
   .nav {
     padding: 12px 14px;
+  }
+
+  .profile-grid {
+    grid-template-columns: 1fr;
   }
 
   .brand {

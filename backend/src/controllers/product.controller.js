@@ -5,7 +5,9 @@ const listProducts = asyncHandler(async (req, res) => {
   const products = await getProducts({
     search: req.query.search || "",
     category: req.query.category || "all",
-    sort: req.query.sort || "featured"
+    sort: req.query.sort || "featured",
+    latitude: req.query.latitude,
+    longitude: req.query.longitude
   });
   res.json({ products });
 });

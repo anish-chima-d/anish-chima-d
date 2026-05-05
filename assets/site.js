@@ -28,9 +28,47 @@ function getAuthToken() {
   return getAuthUser()?.token || "";
 }
 
+function getSavedLocation() {
+  try {
+    return JSON.parse(localStorage.getItem("archhaUserLocation") || "null");
+  } catch {
+    return null;
+  }
+}
+
+function saveLocation(position) {
+  const location = {
+    latitude: position.coords.latitude,
+    longitude: position.coords.longitude,
+    capturedAt: new Date().toISOString()
+  };
+  localStorage.setItem("archhaUserLocation", JSON.stringify(location));
+  return location;
+}
+
+function requestUserLocation() {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject(new Error("Location is not supported by this browser."));
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      position => resolve(saveLocation(position)),
+      () => reject(new Error("Please allow location access to show nearby shops.")),
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 300000 }
+    );
+  });
+}
+
 async function loadProductsFromApi() {
   try {
-    const data = await api.products.list();
+    const location = getAuthToken() ? getSavedLocation() : null;
+    const params = location ? {
+      latitude: location.latitude,
+      longitude: location.longitude
+    } : {};
+    const data = await api.products.list(params);
     products = Array.isArray(data.products) ? data.products : [];
     catalog = [...products];
   } catch (error) {
@@ -90,6 +128,30 @@ function getCart() {
 function saveCart(cart) {
   localStorage.setItem("archhaCart", JSON.stringify(cart));
   updateCartCount();
+}
+
+function getWishlist() {
+  try {
+    return JSON.parse(localStorage.getItem("archhaWishlist") || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function saveWishlist(ids) {
+  localStorage.setItem("archhaWishlist", JSON.stringify([...new Set(ids)]));
+}
+
+function toggleWishlist(productId) {
+  const product = catalog.find(item => item.id === productId);
+  if (!product) return;
+  const wishlist = getWishlist();
+  const exists = wishlist.includes(productId);
+  const nextWishlist = exists ? wishlist.filter(id => id !== productId) : [...wishlist, productId];
+  saveWishlist(nextWishlist);
+  renderWishlistPage();
+  renderSearchResultsPage();
+  showToast(exists ? `${product.name} removed from wishlist.` : `${product.name} saved to wishlist.`, exists ? "info" : "success");
 }
 
 function getLocalOrders() {
@@ -352,11 +414,41 @@ function initProductGrid() {
   if (searchInput && queryFromNav) searchInput.value = queryFromNav;
   if (queryFromNav) saveSearchHistory(queryFromNav, "url");
 
+  function renderLocationGate() {
+    products = [];
+    catalog = [];
+    grid.innerHTML = `
+      <div class="location-gate">
+        <h2>Show nearby shops</h2>
+        <p>Allow location access to see only products from shops within 5 km of you.</p>
+        <button class="btn btn-dark" type="button" id="allowLocationBtn">Use my location</button>
+      </div>
+    `;
+    if (resultsCount) resultsCount.textContent = "Location is needed after login to show nearby shops.";
+    document.getElementById("allowLocationBtn")?.addEventListener("click", async () => {
+      try {
+        grid.innerHTML = loadingMarkup("Finding nearby shops...");
+        await requestUserLocation();
+        await loadProductsFromApi();
+        renderProducts();
+        showToast("Nearby shops loaded.", "success");
+      } catch (error) {
+        grid.innerHTML = `<div class="inline-alert error">${escapeHtml(error.message)}</div>`;
+        showToast(error.message, "error");
+      }
+    });
+  }
+
   function renderProducts() {
+    if (getAuthToken() && !getSavedLocation()) {
+      renderLocationGate();
+      return;
+    }
+
     const query = (searchInput?.value || "").trim().toLowerCase();
     let visibleProducts = products.filter(product => {
       const matchesCategory = activeCategory === "all" || product.type === activeCategory;
-      const searchableText = `${product.name} ${product.fragrance} ${product.sub}`.toLowerCase();
+      const searchableText = `${product.name} ${product.fragrance} ${product.sub} ${product.shopName || ""}`.toLowerCase();
       return matchesCategory && searchableText.includes(query);
     });
 
@@ -375,20 +467,26 @@ function initProductGrid() {
           <a class="product-name" href="product.html?id=${product.id}">${product.name}</a>
           <p class="product-sub">${product.sub}</p>
           <span class="fragrance">${product.fragrance}</span>
+          ${product.shopName ? `<span class="fragrance">${escapeHtml(product.shopName)}${product.distanceKm !== undefined ? ` - ${escapeHtml(product.distanceKm)} km away` : ""}</span>` : ""}
           <div class="rating">Rating ${getDisplayRating(product)} / 5</div>
           <div class="price-row">
             <span class="price">${formatMoney(product.price)}</span>
             <button class="add-btn" type="button" onclick="addToCart('${product.id}')">Add</button>
           </div>
+          <button class="clear-btn wishlist-toggle" type="button" onclick="toggleWishlist('${product.id}')">
+            ${getWishlist().includes(product.id) ? "Saved" : "Save"}
+          </button>
         </div>
       </article>
-    `).join("") : `<p class="section-text">No products found. Try another grocery item or aisle.</p>`;
+    `).join("") : `<p class="section-text">No products found within 5 km. Try another grocery item or update shop coordinates in admin.</p>`;
 
     if (resultsCount) {
       const noun = visibleProducts.length === 1 ? "product" : "products";
       resultsCount.textContent = query
         ? `${visibleProducts.length} ${noun} found for "${searchInput.value.trim()}"`
-        : `${visibleProducts.length} ${noun} available`;
+        : getAuthToken()
+          ? `${visibleProducts.length} ${noun} available within 5 km`
+          : `${visibleProducts.length} ${noun} available`;
     }
   }
 
@@ -442,6 +540,7 @@ function initProductDetail() {
       <div class="detail-price">${formatMoney(product.price)}</div>
       <div class="actions">
         <button class="btn btn-dark" type="button" onclick="addToCart('${product.id}')">Add to Cart</button>
+        <button class="btn btn-outline" type="button" onclick="toggleWishlist('${product.id}')">${getWishlist().includes(product.id) ? "Saved" : "Save to Wishlist"}</button>
         <a class="btn btn-primary" href="shop.html">Back to Shop</a>
       </div>
       <div class="detail-grid">
@@ -1076,6 +1175,7 @@ function initPhoneLogin() {
   const phoneForm = document.getElementById("phoneLoginForm");
   const otpForm = document.getElementById("otpForm");
   const changeNumberBtn = document.getElementById("changeNumberBtn");
+  const demoLoginBtn = document.getElementById("demoLoginBtn");
   const status = document.getElementById("loginStatus");
   if (!phoneForm || !otpForm) return;
 
@@ -1125,6 +1225,11 @@ function initPhoneLogin() {
       const user = { phone: result.phone, token: result.token, loggedInAt: new Date().toISOString() };
       localStorage.setItem("archhaUser", JSON.stringify(user));
       await syncLocalCartToBackend();
+      try {
+        await requestUserLocation();
+      } catch (locationError) {
+        showToast(locationError.message, "error");
+      }
     } catch (error) {
       setFormMessage(otpForm, error.message || "Invalid OTP.", "error");
       showToast(error.message || "Invalid OTP.", "error");
@@ -1137,7 +1242,7 @@ function initPhoneLogin() {
     status.classList.remove("hidden");
     status.innerHTML = `
       <h2>Login successful.</h2>
-      <p>Mobile number <strong>${pendingPhone}</strong> is logged in.</p>
+      <p>Mobile number <strong>${pendingPhone}</strong> is logged in. Shop results will use your saved location to stay within 5 km.</p>
       <a class="btn btn-dark" href="shop.html">Continue Shopping</a>
     `;
   });
@@ -1146,6 +1251,239 @@ function initPhoneLogin() {
     otpForm.reset();
     otpForm.classList.add("hidden");
     phoneForm.classList.remove("hidden");
+  });
+
+  demoLoginBtn?.addEventListener("click", async () => {
+    setBusy(demoLoginBtn, true, "Opening demo...");
+    try {
+      const result = await api.auth.demoLogin();
+      const user = result.user || {};
+      localStorage.setItem("archhaUser", JSON.stringify(user));
+      if (result.location) localStorage.setItem("archhaUserLocation", JSON.stringify(result.location));
+      await syncLocalCartToBackend();
+      phoneForm.classList.add("hidden");
+      otpForm.classList.add("hidden");
+      status.classList.remove("hidden");
+      status.innerHTML = `
+        <h2>Demo login active.</h2>
+        <p><strong>${escapeHtml(user.fullName || user.phone)}</strong> is logged in with a real backend session.</p>
+        <a class="btn btn-dark" href="profile.html">View Profile</a>
+        <a class="btn btn-primary" href="shop.html">Continue Shopping</a>
+      `;
+      showToast("Demo session created.", "success");
+    } catch (error) {
+      setFormMessage(phoneForm, error.message || "Demo login failed.", "error");
+      showToast(error.message || "Demo login failed.", "error");
+    } finally {
+      setBusy(demoLoginBtn, false);
+    }
+  });
+}
+
+function productCardMarkup(product) {
+  const saved = getWishlist().includes(product.id);
+  return `
+    <article class="product-card">
+      <a class="product-link" href="product.html?id=${product.id}" aria-label="View ${escapeHtml(product.name)} details">
+        <div class="product-art ${escapeHtml(product.type)}">
+          <span class="tag">${escapeHtml(product.tag)}</span>
+          <div class="product-visual" aria-hidden="true">${escapeHtml(product.icon)}</div>
+        </div>
+      </a>
+      <div class="product-info">
+        <a class="product-name" href="product.html?id=${product.id}">${escapeHtml(product.name)}</a>
+        <p class="product-sub">${escapeHtml(product.sub || product.description || "")}</p>
+        <span class="fragrance">${escapeHtml(product.fragrance || product.type || "")}</span>
+        ${product.shopName ? `<span class="fragrance">${escapeHtml(product.shopName)}${product.distanceKm !== undefined ? ` - ${escapeHtml(product.distanceKm)} km away` : ""}</span>` : ""}
+        <div class="rating">Rating ${getDisplayRating(product)} / 5</div>
+        <div class="price-row">
+          <span class="price">${formatMoney(product.price)}</span>
+          <button class="add-btn" type="button" onclick="addToCart('${product.id}')">Add</button>
+        </div>
+        <button class="clear-btn wishlist-toggle" type="button" onclick="toggleWishlist('${product.id}')">${saved ? "Saved" : "Save"}</button>
+      </div>
+    </article>
+  `;
+}
+
+function renderWishlistPage() {
+  const root = document.getElementById("wishlistGrid");
+  const summary = document.getElementById("wishlistSummary");
+  if (!root) return;
+
+  if (getAuthToken() && !getSavedLocation()) {
+    root.innerHTML = `
+      <div class="location-gate">
+        <h2>Show nearby saved products</h2>
+        <p>Allow location access so wishlist products are checked against shops within 5 km.</p>
+        <button class="btn btn-dark" type="button" id="wishlistLocationBtn">Use my location</button>
+      </div>
+    `;
+    if (summary) summary.textContent = "Location is needed to show nearby saved products.";
+    document.getElementById("wishlistLocationBtn")?.addEventListener("click", async () => {
+      try {
+        await requestUserLocation();
+        await loadProductsFromApi();
+        renderWishlistPage();
+      } catch (error) {
+        showToast(error.message, "error");
+      }
+    });
+    return;
+  }
+
+  const wishlist = getWishlist();
+  const items = wishlist
+    .map(id => catalog.find(product => product.id === id))
+    .filter(Boolean);
+
+  if (summary) {
+    summary.textContent = items.length
+      ? `${items.length} saved ${items.length === 1 ? "product" : "products"}`
+      : "No saved products yet.";
+  }
+
+  root.innerHTML = items.length ? items.map(productCardMarkup).join("") : `
+    <div class="empty-state">
+      <div class="empty-illustration" aria-hidden="true"></div>
+      <h2>Your wishlist is empty.</h2>
+      <p class="section-text">Save products from shop or product pages to build a quick reorder list.</p>
+      <a class="btn btn-dark" href="shop.html">Browse Products</a>
+    </div>
+  `;
+}
+
+function renderSearchResultsPage() {
+  const root = document.getElementById("searchResultsGrid");
+  const summary = document.getElementById("searchResultsSummary");
+  const title = document.getElementById("searchResultsTitle");
+  if (!root) return;
+
+  if (getAuthToken() && !getSavedLocation()) {
+    root.innerHTML = `
+      <div class="location-gate">
+        <h2>Show nearby search results</h2>
+        <p>Allow location access to search products only from shops within 5 km.</p>
+        <button class="btn btn-dark" type="button" id="searchLocationBtn">Use my location</button>
+      </div>
+    `;
+    if (summary) summary.textContent = "Location is needed after login to search nearby shops.";
+    document.getElementById("searchLocationBtn")?.addEventListener("click", async () => {
+      try {
+        await requestUserLocation();
+        await loadProductsFromApi();
+        renderSearchResultsPage();
+      } catch (error) {
+        showToast(error.message, "error");
+      }
+    });
+    return;
+  }
+
+  const query = (new URLSearchParams(window.location.search).get("q") || "").trim().toLowerCase();
+  const results = query
+    ? products.filter(product => {
+      const text = `${product.name} ${product.fragrance} ${product.sub} ${product.description} ${product.shopName || ""}`.toLowerCase();
+      return text.includes(query);
+    })
+    : products;
+
+  if (title) title.textContent = query ? `Search results for "${query}"` : "Search all products";
+  if (summary) {
+    summary.textContent = query
+      ? `${results.length} ${results.length === 1 ? "match" : "matches"} found`
+      : `${results.length} products available`;
+  }
+
+  root.innerHTML = results.length ? results.map(productCardMarkup).join("") : `
+    <div class="empty-state">
+      <div class="empty-illustration" aria-hidden="true"></div>
+      <h2>No matching products.</h2>
+      <p class="section-text">Try another grocery name, aisle, shop, or request the product from our team.</p>
+      <div class="actions">
+        <a class="btn btn-dark" href="shop.html">Back to Shop</a>
+        <a class="btn btn-primary" href="request-product.html">Request Product</a>
+      </div>
+    </div>
+  `;
+}
+
+function renderProfilePage() {
+  const root = document.getElementById("profileRoot");
+  if (!root) return;
+
+  const user = getAuthUser();
+  const location = getSavedLocation();
+  const wishlistCount = getWishlist().length;
+  const cartCount = getCart().reduce((sum, item) => sum + Number(item.qty || 0), 0);
+
+  if (!user) {
+    root.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-illustration" aria-hidden="true"></div>
+        <h2>Login to view profile.</h2>
+        <p class="section-text">Your account keeps phone login, nearby shop location, cart, wishlist, and order history together.</p>
+        <a class="btn btn-dark" href="login.html">Login</a>
+      </div>
+    `;
+    return;
+  }
+
+  root.innerHTML = `
+    <div class="profile-grid">
+      <section class="profile-panel">
+        <span class="profile-avatar">${escapeHtml((user.fullName || user.phone || "A").charAt(0).toUpperCase())}</span>
+        <div>
+          <div class="kicker">Account</div>
+          <h2>${escapeHtml(user.fullName || "Archha customer")}</h2>
+          <p>${escapeHtml(user.phone || "No phone saved")}</p>
+        </div>
+      </section>
+      <section class="profile-panel">
+        <div>
+          <div class="kicker">Nearby shops</div>
+          <h2>${location ? "Location saved" : "Location needed"}</h2>
+          <p>${location ? `${Number(location.latitude).toFixed(5)}, ${Number(location.longitude).toFixed(5)}` : "Allow location so shop results stay within 5 km."}</p>
+        </div>
+        <button class="btn btn-dark" type="button" id="profileLocationBtn">${location ? "Update Location" : "Use Location"}</button>
+      </section>
+      <section class="profile-panel">
+        <div>
+          <div class="kicker">Quick stats</div>
+          <h2>${cartCount} cart items</h2>
+          <p>${wishlistCount} saved products in wishlist.</p>
+        </div>
+        <div class="actions">
+          <a class="btn btn-primary" href="wishlist.html">Wishlist</a>
+          <a class="btn btn-outline" href="orders.html">Orders</a>
+        </div>
+      </section>
+      <section class="profile-panel">
+        <div>
+          <div class="kicker">Session</div>
+          <h2>Logged in</h2>
+          <p>${escapeHtml(user.loggedInAt ? `Since ${new Date(user.loggedInAt).toLocaleString("en-IN")}` : "Phone verified session")}</p>
+        </div>
+        <button class="btn btn-outline" type="button" id="profileLogoutBtn">Logout</button>
+      </section>
+    </div>
+  `;
+
+  document.getElementById("profileLocationBtn")?.addEventListener("click", async () => {
+    try {
+      await requestUserLocation();
+      showToast("Location updated.", "success");
+      renderProfilePage();
+    } catch (error) {
+      showToast(error.message, "error");
+    }
+  });
+
+  document.getElementById("profileLogoutBtn")?.addEventListener("click", () => {
+    localStorage.removeItem("archhaUser");
+    localStorage.removeItem("archhaUserLocation");
+    showToast("Logged out.", "info");
+    renderProfilePage();
   });
 }
 
@@ -1270,7 +1608,7 @@ function initNavSearch() {
       event.preventDefault();
       const query = (input?.value || "").trim();
       saveSearchHistory(query, "nav");
-      window.location.href = query ? `shop.html?q=${encodeURIComponent(query)}` : "shop.html";
+      window.location.href = query ? `search-results.html?q=${encodeURIComponent(query)}` : "shop.html";
     });
   });
 }
@@ -1315,6 +1653,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   initRegisterForm();
   initProductRequestForm();
   initForms();
+  renderWishlistPage();
+  renderSearchResultsPage();
+  renderProfilePage();
   renderSearchHistoryPanel();
   renderNotifications();
   renderOrdersPage();

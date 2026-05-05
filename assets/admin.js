@@ -229,7 +229,8 @@ function productMatches(product, query, type) {
     product.sub,
     product.description,
     product.tag,
-    product.pack
+    product.pack,
+    product.shopName
   ].join(" ").toLowerCase();
   const matchesText = !query || text.includes(query);
   const matchesType = type === "all" || product.type === type;
@@ -253,6 +254,7 @@ function renderProducts() {
         <th>Product</th>
         <th>Category</th>
         <th>Aisle</th>
+        <th>Shop</th>
         <th>Pack</th>
         <th>Price</th>
         <th>Actions</th>
@@ -268,6 +270,10 @@ function renderProducts() {
           <td><span class="admin-badge category">${escapeHtml(categoryLabels[product.type] || product.type || "-")}</span></td>
           <td>${escapeHtml(product.fragrance || "-")}</td>
           <td>
+            ${escapeHtml(product.shopName || "-")}
+            <span class="muted">${product.shopLatitude && product.shopLongitude ? `${escapeHtml(product.shopLatitude)}, ${escapeHtml(product.shopLongitude)}` : "No coordinates"}</span>
+          </td>
+          <td>
             ${escapeHtml(product.pack || "-")}
             <span class="muted">${escapeHtml(product.burnTime || "")}</span>
           </td>
@@ -277,7 +283,7 @@ function renderProducts() {
             <button class="small-btn danger" type="button" data-product-action="delete" data-product-id="${escapeHtml(product.id)}">Delete</button>
           </td>
         </tr>
-      `).join("") : `<tr><td colspan="6"><div class="inline-alert">No products match the current view.</div></td></tr>`}
+      `).join("") : `<tr><td colspan="7"><div class="inline-alert">No products match the current view.</div></td></tr>`}
     </tbody>
   `;
 }
@@ -285,14 +291,14 @@ function renderProducts() {
 async function loadProducts() {
   const token = getAdminToken();
   const table = byId("adminProductsTable");
-  table.innerHTML = tableMessage(loadingMarkup("Loading products..."), "info", 6);
+  table.innerHTML = tableMessage(loadingMarkup("Loading products..."), "info", 7);
   try {
     const result = await api.admin.products.list(token);
     adminState.products = result.products || [];
     renderProducts();
     updateTabCounts();
   } catch (error) {
-    table.innerHTML = tableMessage(`Products unavailable. ${escapeHtml(error.message)}`, "error", 6);
+    table.innerHTML = tableMessage(`Products unavailable. ${escapeHtml(error.message)}`, "error", 7);
   }
 }
 
@@ -684,6 +690,9 @@ function editProduct(productId) {
   byId("adminProductTag").value = product.tag || "";
   byId("adminProductIcon").value = product.icon || "";
   byId("adminProductPack").value = product.pack || "";
+  byId("adminProductShopName").value = product.shopName || "";
+  byId("adminProductShopLatitude").value = product.shopLatitude || "";
+  byId("adminProductShopLongitude").value = product.shopLongitude || "";
   byId("adminProductBurnTime").value = product.burnTime || "";
   byId("adminProductRating").value = product.rating || "";
   byId("adminProductUse").value = product.use || "";

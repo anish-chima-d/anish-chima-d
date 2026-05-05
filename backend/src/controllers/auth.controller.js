@@ -1,5 +1,5 @@
 const { asyncHandler } = require("../lib/asyncHandler");
-const { register, requestOtp, verifyOtp } = require("../services/auth.service");
+const { register, requestOtp, verifyOtp, createDemoSession } = require("../services/auth.service");
 
 const registerController = asyncHandler(async (req, res) => {
   const result = await register(req.body);
@@ -16,4 +16,9 @@ const verifyOtpController = asyncHandler(async (req, res) => {
   res.json(result);
 });
 
-module.exports = { registerController, requestOtpController, verifyOtpController };
+const demoLoginController = asyncHandler(async (req, res) => {
+  const result = await createDemoSession();
+  res.status(201).json(result);
+});
+
+module.exports = { registerController, requestOtpController, verifyOtpController, demoLoginController };

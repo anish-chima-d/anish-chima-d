@@ -66,6 +66,11 @@
         method: "POST",
         body: { phone, otp }
       });
+    },
+    demoLogin() {
+      return request("/auth/demo-login", {
+        method: "POST"
+      });
     }
   };
 

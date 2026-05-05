@@ -1,1 +1,10 @@
-[]
+[
+  {
+    "phone": "9999999999",
+    "fullName": "Archha Demo Customer",
+    "city": "Delhi",
+    "area": "Connaught Place",
+    "updatedAt": "2026-05-05T15:23:15.479Z",
+    "createdAt": "2026-05-05T15:19:46.485Z"
+  }
+]

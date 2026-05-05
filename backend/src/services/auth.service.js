@@ -67,4 +67,43 @@ async function verifyOtp(phone, otp) {
   return { phone, token };
 }
 
-module.exports = { register, requestOtp, verifyOtp };
+async function createDemoSession() {
+  const demoUser = {
+    phone: "9999999999",
+    fullName: "Archha Demo Customer",
+    city: "Delhi",
+    area: "Connaught Place",
+    updatedAt: new Date().toISOString()
+  };
+
+  const users = await readJson("users.json", []);
+  const existing = users.find(user => user.phone === demoUser.phone);
+  if (existing) Object.assign(existing, demoUser);
+  else users.push({ ...demoUser, createdAt: new Date().toISOString() });
+  await writeJson("users.json", users);
+
+  const sessions = await readJson("sessions.json", []);
+  const token = crypto.randomBytes(32).toString("hex");
+  sessions.push({ phone: demoUser.phone, token, createdAt: new Date().toISOString(), demo: true });
+  await writeJson("sessions.json", sessions);
+
+  return {
+    user: {
+      phone: demoUser.phone,
+      fullName: demoUser.fullName,
+      city: demoUser.city,
+      area: demoUser.area,
+      token,
+      loggedInAt: new Date().toISOString(),
+      demo: true
+    },
+    location: {
+      latitude: 28.6315,
+      longitude: 77.2167,
+      capturedAt: new Date().toISOString(),
+      label: "Connaught Place, Delhi"
+    }
+  };
+}
+
+module.exports = { register, requestOtp, verifyOtp, createDemoSession };

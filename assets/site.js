@@ -43,6 +43,7 @@ function saveLocation(position) {
     capturedAt: new Date().toISOString()
   };
   localStorage.setItem("archhaUserLocation", JSON.stringify(location));
+  updateNavLocationTab();
   return location;
 }
 
@@ -128,6 +129,56 @@ function getCart() {
 function saveCart(cart) {
   localStorage.setItem("archhaCart", JSON.stringify(cart));
   updateCartCount();
+}
+
+function getLocationLabel(location = getSavedLocation()) {
+  if (!location) return "Set location";
+  if (location.label) return location.label;
+  const lat = Number(location.latitude);
+  const lng = Number(location.longitude);
+  if (Number.isFinite(lat) && Number.isFinite(lng)) return `${lat.toFixed(2)}, ${lng.toFixed(2)}`;
+  return "Location saved";
+}
+
+function updateNavLocationTab() {
+  const location = getSavedLocation();
+  document.querySelectorAll("[data-location-tab]").forEach(button => {
+    button.innerHTML = `
+      <span class="location-pin" aria-hidden="true"></span>
+      <span>${escapeHtml(getLocationLabel(location))}</span>
+    `;
+    button.classList.toggle("has-location", Boolean(location));
+  });
+}
+
+function initNavLocationTab() {
+  document.querySelectorAll(".nav-actions").forEach(actions => {
+    if (actions.querySelector("[data-location-tab]")) return;
+    const button = document.createElement("button");
+    button.className = "location-tab";
+    button.type = "button";
+    button.dataset.locationTab = "true";
+    button.addEventListener("click", async () => {
+      setBusy(button, true, "Locating...");
+      try {
+        await requestUserLocation();
+        await loadProductsFromApi();
+        renderWishlistPage();
+        renderSearchResultsPage();
+        renderProfilePage();
+        showToast("Location updated.", "success");
+      } catch (error) {
+        showToast(error.message, "error");
+      } finally {
+        setBusy(button, false);
+        updateNavLocationTab();
+      }
+    });
+    const cart = actions.querySelector(".cart-btn");
+    if (cart) actions.insertBefore(button, cart);
+    else actions.prepend(button);
+  });
+  updateNavLocationTab();
 }
 
 function getWishlist() {
@@ -1641,8 +1692,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   await loadProductsFromApi();
   updateCartCount();
   initActiveNav();
+  initNavLocationTab();
   initNavSearch();
-  initFloatingRequestButton();
   initProductGrid();
   initProductDetail();
   renderCart();

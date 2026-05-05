@@ -134,10 +134,7 @@ function saveCart(cart) {
 function getLocationLabel(location = getSavedLocation()) {
   if (!location) return "Set location";
   if (location.label) return location.label;
-  const lat = Number(location.latitude);
-  const lng = Number(location.longitude);
-  if (Number.isFinite(lat) && Number.isFinite(lng)) return `${lat.toFixed(2)}, ${lng.toFixed(2)}`;
-  return "Location saved";
+  return "Current location";
 }
 
 function updateNavLocationTab() {
@@ -1494,7 +1491,7 @@ function renderProfilePage() {
         <div>
           <div class="kicker">Nearby shops</div>
           <h2>${location ? "Location saved" : "Location needed"}</h2>
-          <p>${location ? `${Number(location.latitude).toFixed(5)}, ${Number(location.longitude).toFixed(5)}` : "Allow location so shop results stay within 5 km."}</p>
+          <p>${location ? escapeHtml(getLocationLabel(location)) : "Allow location so shop results stay within 5 km."}</p>
         </div>
         <button class="btn btn-dark" type="button" id="profileLocationBtn">${location ? "Update Location" : "Use Location"}</button>
       </section>

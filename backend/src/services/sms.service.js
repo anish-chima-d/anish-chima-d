@@ -28,21 +28,60 @@ async function sendWebhookSms(phone, otp) {
 async function sendFast2Sms(phone, otp) {
   if (!env.smsApiKey) throw new ApiError(503, "Fast2SMS API key is not configured.");
 
+  const payload = new URLSearchParams({
+    route: env.smsRoute,
+    variables_values: otp,
+    numbers: phone
+  });
+
   const response = await fetch("https://www.fast2sms.com/dev/bulkV2", {
     method: "POST",
     headers: {
       authorization: env.smsApiKey,
-      "Content-Type": "application/json"
+      "Content-Type": "application/x-www-form-urlencoded",
+      Accept: "application/json"
     },
-    body: JSON.stringify({
-      route: env.smsRoute,
-      variables_values: otp,
-      numbers: phone
-    })
+    body: payload
   });
 
-  if (!response.ok) throw new ApiError(502, "Fast2SMS rejected the OTP request.");
-  return { provider: "fast2sms" };
+  const result = await response.json().catch(async () => ({ message: await response.text().catch(() => "") }));
+  if (response.ok && result.return !== false) {
+    return { provider: "fast2sms", requestId: result.request_id };
+  }
+
+  const query = new URLSearchParams({
+    authorization: env.smsApiKey,
+    route: env.smsRoute,
+    variables_values: otp,
+    numbers: phone
+  });
+  const getResponse = await fetch(`https://www.fast2sms.com/dev/bulkV2?${query.toString()}`, {
+    method: "GET",
+    headers: { Accept: "application/json" }
+  });
+  const getResult = await getResponse.json().catch(async () => ({ message: await getResponse.text().catch(() => "") }));
+  if (getResponse.ok && getResult.return !== false) {
+    return { provider: "fast2sms", requestId: getResult.request_id };
+  }
+
+  const message = Array.isArray(result.message) ? result.message.join(" ") : result.message;
+  const getMessage = Array.isArray(getResult.message) ? getResult.message.join(" ") : getResult.message;
+
+  const reason = getMessage || message || "Fast2SMS rejected the OTP request.";
+  console.error("Fast2SMS OTP failed:", {
+    postStatus: response.status,
+    getStatus: getResponse.status,
+    reason,
+    postResult: result,
+    getResult
+  });
+  throw new ApiError(502, `Fast2SMS: ${reason}`, {
+    provider: "fast2sms",
+    postStatus: response.status,
+    getStatus: getResponse.status,
+    postResult: result,
+    getResult
+  });
 }
 
 async function sendTwilioSms(phone, otp) {

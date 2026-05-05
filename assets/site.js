@@ -1,17 +1,5 @@
-let products = [
-  { id: "fresh-veggie-combo", name: "Fresh Veggie Combo", fragrance: "Fresh Produce", sub: "Tomato, potato, onion, greens, and seasonal vegetables", price: 249, type: "produce", tag: "Fresh", icon: "V", rating: "4.8", burnTime: "Best within 3 days", pack: "Approx. 3 kg mixed vegetables", use: "Daily cooking, curries, sabzi, and salads", description: "A practical daily vegetable combo for quick family cooking, packed with common kitchen staples and seasonal greens." },
-  { id: "fruit-breakfast-pack", name: "Fruit Breakfast Pack", fragrance: "Fruits", sub: "Banana, apple, orange, and seasonal fruit", price: 299, type: "produce", tag: "Morning", icon: "F", rating: "4.7", burnTime: "Best within 4 days", pack: "Approx. 2.5 kg mixed fruits", use: "Breakfast, lunch boxes, smoothies, and snacks", description: "A colorful fruit pack for school boxes, morning bowls, quick snacks, and light desserts." },
-  { id: "basmati-rice-5kg", name: "Basmati Rice 5 kg", fragrance: "Rice and Grains", sub: "Long-grain basmati for everyday meals", price: 499, type: "pantry", tag: "Staple", icon: "R", rating: "4.9", burnTime: "12 months shelf life", pack: "5 kg sealed bag", use: "Daily rice, pulao, biryani, and meal prep", description: "A reliable long-grain basmati rice bag for regular household cooking and weekend special meals." },
-  { id: "atta-dal-kit", name: "Atta and Dal Kit", fragrance: "Staples", sub: "Whole wheat atta with toor dal and moong dal", price: 649, type: "pantry", tag: "Family", icon: "A", rating: "4.8", burnTime: "6 months shelf life", pack: "5 kg atta plus 2 kg assorted dal", use: "Rotis, dal, khichdi, and weekly meal planning", description: "A family staple kit that covers the backbone of Indian home cooking: fresh rotis and comforting dals." },
-  { id: "dairy-morning-pack", name: "Dairy Morning Pack", fragrance: "Dairy", sub: "Milk, curd, paneer, butter, and cheese slices", price: 389, type: "dairy", tag: "Chilled", icon: "D", rating: "4.6", burnTime: "Use within 2 to 5 days", pack: "Assorted chilled dairy pack", use: "Tea, breakfast, snacks, cooking, and lunch boxes", description: "A chilled dairy pack for the morning routine, quick cooking, and family snack prep." },
-  { id: "masala-oil-combo", name: "Masala and Oil Combo", fragrance: "Cooking Essentials", sub: "Sunflower oil with turmeric, chilli, cumin, and garam masala", price: 549, type: "pantry", tag: "Kitchen", icon: "M", rating: "4.7", burnTime: "6 to 12 months shelf life", pack: "1L oil plus 4 spice packs", use: "Everyday tadka, curries, sabzi, and marinades", description: "A cooking essentials combo for keeping core flavors stocked without searching across multiple aisles." },
-  { id: "snack-time-box", name: "Snack Time Box", fragrance: "Snacks", sub: "Biscuits, namkeen, chips, noodles, and juice", price: 329, type: "snacks", tag: "Popular", icon: "S", rating: "4.5", burnTime: "3 to 6 months shelf life", pack: "Assorted family snack box", use: "Evening tea, school snacks, movie nights, and guests", description: "A cheerful snack box with sweet, salty, crunchy, and quick-cook favorites for the whole home." },
-  { id: "home-care-refill", name: "Home Care Refill Pack", fragrance: "Home Care", sub: "Dishwash, floor cleaner, detergent, and handwash", price: 459, type: "home", tag: "Refill", icon: "H", rating: "4.6", burnTime: "12 months shelf life", pack: "4 household cleaning products", use: "Kitchen cleaning, laundry, floors, and hand care", description: "A practical household refill pack that keeps the cleaning shelf ready for the week." },
-  { id: "personal-care-basics", name: "Personal Care Basics", fragrance: "Personal Care", sub: "Soap, shampoo, toothpaste, and body lotion", price: 399, type: "home", tag: "Care", icon: "P", rating: "4.6", burnTime: "12 months shelf life", pack: "4 daily personal care items", use: "Bathroom restock and family travel backup", description: "Daily bathroom essentials bundled for quick restocking and simple family shopping." }
-];
-
-const festivalBundle = { id: "weekly-grocery-basket", name: "Weekly Grocery Basket", fragrance: "Value Basket", sub: "Vegetables, fruit, rice, dal, oil, dairy, snacks, and home care", price: 999, type: "basket", tag: "Bundle", icon: "B", rating: "4.9", burnTime: "Mixed shelf life", pack: "Complete weekly grocery basket", use: "Weekly family restock, house setup, office pantry, and apartment orders", description: "A complete grocery basket for weekly household restocking with fresh, pantry, dairy, snack, and cleaning essentials." };
-let catalog = [...products, festivalBundle];
+let products = [];
+let catalog = [];
 let activeCategory = "all";
 const api = window.ArchhaApi;
 
@@ -43,13 +31,8 @@ function getAuthToken() {
 async function loadProductsFromApi() {
   try {
     const data = await api.products.list();
-    if (!Array.isArray(data.products) || !data.products.length) return;
-
-    const fetchedBundle = data.products.find(item => item.id === festivalBundle.id);
-    const fetchedProducts = data.products.filter(item => item.id !== festivalBundle.id);
-    products = fetchedProducts.length ? fetchedProducts : products;
-    if (fetchedBundle) Object.assign(festivalBundle, fetchedBundle);
-    catalog = [...products, festivalBundle];
+    products = Array.isArray(data.products) ? data.products : [];
+    catalog = [...products];
   } catch (error) {
     showToast(error.message || "Product API unavailable.", "error");
   }
@@ -258,7 +241,7 @@ function getCartRows() {
 function getCartTotals() {
   const rows = getCartRows();
   const subtotal = rows.reduce((sum, item) => sum + item.price * item.qty, 0);
-  const discount = localStorage.getItem("archhaCoupon") === "GROCERY10" ? Math.round(subtotal * 0.1) : 0;
+  const discount = 0;
   const delivery = subtotal === 0 || subtotal >= 499 ? 0 : 49;
   const total = Math.max(subtotal - discount + delivery, 0);
   return { rows, subtotal, discount, delivery, total };
@@ -306,7 +289,7 @@ async function addToCart(productIdOrName) {
 }
 
 function addBundle() {
-  addToCart(festivalBundle.id);
+  showToast("No value basket is available yet.", "info");
 }
 
 async function updateCartQuantity(productId, qty) {
@@ -430,7 +413,18 @@ function initProductDetail() {
   if (!detailRoot) return;
 
   const productId = new URLSearchParams(window.location.search).get("id");
-  const product = catalog.find(item => item.id === productId) || products[0];
+  const product = catalog.find(item => item.id === productId);
+  if (!product) {
+    detailRoot.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-illustration" aria-hidden="true"></div>
+        <h2>No product available.</h2>
+        <p class="section-text">Products added from the admin panel will appear here.</p>
+        <a class="btn btn-dark" href="shop.html">Back to Shop</a>
+      </div>
+    `;
+    return;
+  }
   document.title = `${product.name} | Archha Grocery`;
   const displayRating = getDisplayRating(product);
 

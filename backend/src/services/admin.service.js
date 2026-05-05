@@ -12,6 +12,7 @@ function makeId(name) {
 }
 
 async function login(pin) {
+  if (!env.adminPin) throw new ApiError(500, "Admin PIN is not configured.");
   if (String(pin) !== env.adminPin) throw new ApiError(401, "Invalid admin PIN.");
 
   const sessions = await readJson("adminSessions.json", []);

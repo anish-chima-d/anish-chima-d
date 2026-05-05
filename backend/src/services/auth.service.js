@@ -1,34 +1,64 @@
 const crypto = require("crypto");
 const { env } = require("../config/env");
 const { readJson, writeJson } = require("../lib/jsonStore");
-const { ApiError } = require("../lib/ApiError");
+const { sendOtpSms } = require("./sms.service");
+const { validatePhone, generateOtp, assertCanRequestOtp, attachOtp, verifyStoredOtp } = require("./otp.service");
 
-function validatePhone(phone) {
-  if (!/^[0-9]{10}$/.test(String(phone || ""))) {
-    throw new ApiError(400, "Enter a valid 10 digit mobile number.");
-  }
+async function register(payload = {}) {
+  const phone = String(payload.phone || "").trim();
+  validatePhone(phone);
+  const users = await readJson("users.json", []);
+  const existing = users.find(user => user.phone === phone);
+
+  const userProfile = {
+    phone,
+    fullName: String(payload.fullName || "").trim(),
+    city: String(payload.city || "").trim(),
+    area: String(payload.area || "").trim()
+  };
+
+  if (existing) Object.assign(existing, userProfile, { updatedAt: new Date().toISOString() });
+  else users.push({ ...userProfile, createdAt: new Date().toISOString() });
+
+  await writeJson("users.json", users);
+  return { user: userProfile };
 }
 
 async function requestOtp(phone) {
   validatePhone(phone);
   const users = await readJson("users.json", []);
-  const existing = users.find(user => user.phone === phone);
-
-  if (!existing) {
-    users.push({ phone, createdAt: new Date().toISOString() });
-    await writeJson("users.json", users);
+  let user = users.find(item => item.phone === phone);
+  if (!user) {
+    user = { phone, createdAt: new Date().toISOString() };
+    users.push(user);
   }
+
+  assertCanRequestOtp(user);
+  const otp = generateOtp();
+  const smsResult = await sendOtpSms(phone, otp);
+  attachOtp(user, otp);
+  await writeJson("users.json", users);
 
   return {
     phone,
-    message: "OTP generated. Connect an SMS provider before production.",
-    demoOtp: env.nodeEnv === "production" ? undefined : env.demoOtp
+    message: smsResult.skipped ? "OTP generated for local development." : "OTP sent successfully.",
+    provider: smsResult.provider,
+    expiresInSeconds: env.otpTtlMinutes * 60,
+    devOtp: env.nodeEnv === "production" ? undefined : otp
   };
 }
 
 async function verifyOtp(phone, otp) {
   validatePhone(phone);
-  if (String(otp) !== env.demoOtp) throw new ApiError(401, "Invalid OTP.");
+  const users = await readJson("users.json", []);
+  const user = users.find(item => item.phone === phone);
+  try {
+    verifyStoredOtp(user, otp);
+  } catch (error) {
+    await writeJson("users.json", users);
+    throw error;
+  }
+  await writeJson("users.json", users);
 
   const sessions = await readJson("sessions.json", []);
   const token = crypto.randomBytes(32).toString("hex");
@@ -38,4 +68,4 @@ async function verifyOtp(phone, otp) {
   return { phone, token };
 }
 
-module.exports = { requestOtp, verifyOtp };
+module.exports = { register, requestOtp, verifyOtp };

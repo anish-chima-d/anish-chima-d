@@ -1,1 +1,20 @@
-[]
+[
+  {
+    "phone": "9831479574",
+    "createdAt": "2026-05-05T03:59:36.828Z",
+    "otpHash": "d964aa3012f2eeefa6e41c1dbddadc7adc18c278ee858afc125c293eae75feb0",
+    "otpExpiresAt": "2026-05-05T04:10:32.229Z",
+    "otpRequestedAt": "2026-05-05T04:00:32.229Z",
+    "otpAttempts": 0,
+    "updatedAt": "2026-05-05T04:00:32.229Z"
+  },
+  {
+    "phone": "8910409039",
+    "createdAt": "2026-05-05T04:01:48.709Z",
+    "otpHash": "beaa7828df60a32d01c06fc54205d66324c80fbac92640c516f2e5f35fdba9db",
+    "otpExpiresAt": "2026-05-05T04:11:48.709Z",
+    "otpRequestedAt": "2026-05-05T04:01:48.709Z",
+    "otpAttempts": 0,
+    "updatedAt": "2026-05-05T04:01:48.709Z"
+  }
+]

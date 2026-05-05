@@ -1,7 +1,8 @@
 const fs = require("fs/promises");
 const path = require("path");
 
-const dataDir = path.join(__dirname, "..", "data");
+const sourceDataDir = path.join(__dirname, "..", "data");
+const dataDir = process.env.VERCEL ? path.join("/tmp", "archha-data") : sourceDataDir;
 
 async function readJson(fileName, fallback) {
   const filePath = path.join(dataDir, fileName);
@@ -10,8 +11,16 @@ async function readJson(fileName, fallback) {
     return JSON.parse(raw);
   } catch (error) {
     if (error.code === "ENOENT") {
-      await writeJson(fileName, fallback);
-      return fallback;
+      const sourcePath = path.join(sourceDataDir, fileName);
+      try {
+        const raw = await fs.readFile(sourcePath, "utf8");
+        const seeded = JSON.parse(raw);
+        await writeJson(fileName, seeded);
+        return seeded;
+      } catch {
+        await writeJson(fileName, fallback);
+        return fallback;
+      }
     }
     throw error;
   }

@@ -1,5 +1,5 @@
 (function () {
-  const DEFAULT_BASE_URL = "http://localhost:5000/api";
+  const DEFAULT_BASE_URL = "/api";
 
   function getBaseUrl() {
     return localStorage.getItem("archhaApiBase") || DEFAULT_BASE_URL;
@@ -49,6 +49,12 @@
   };
 
   const auth = {
+    register(payload) {
+      return request("/auth/register", {
+        method: "POST",
+        body: payload
+      });
+    },
     requestOtp(phone) {
       return request("/auth/request-otp", {
         method: "POST",

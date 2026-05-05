@@ -213,7 +213,7 @@ async function loadDashboard() {
       <div class="admin-kpi-card accent-revenue">
         <span>Revenue</span>
         <strong>${money(stats.revenue)}</strong>
-        <small>Gross demo total</small>
+        <small>Gross order total</small>
       </div>
     `;
   } catch (error) {
@@ -697,7 +697,7 @@ function editProduct(productId) {
 }
 
 async function deleteProduct(productId) {
-  if (!confirm("Delete this product from the backend demo catalog?")) return;
+      if (!confirm("Delete this product from the catalog?")) return;
   try {
     await api.admin.products.remove(getAdminToken(), productId);
     showToast("Product deleted.", "success");
@@ -783,7 +783,7 @@ function initAdminLogin() {
       showToast("Admin login successful.", "success");
       await loadAdminData();
     } catch (error) {
-      setFormMessage(form, `${error.message}. Start backend and use PIN 9999 for demo.`, "error");
+      setFormMessage(form, error.message, "error");
       showToast(error.message, "error");
     } finally {
       setBusy(submitButton, false);

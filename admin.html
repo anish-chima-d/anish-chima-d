@@ -9,7 +9,7 @@
 </head>
 
 <body class="admin-page" data-page="admin">
-  <div class="topbar admin-topbar">Admin demo: API localhost:5000, PIN 9999.</div>
+  <div class="topbar admin-topbar">Admin dashboard connected to the live Archha Grocery API.</div>
   <nav class="nav admin-nav" aria-label="Admin navigation">
     <a class="brand" href="index.html"><span class="brand-mark">A</span>Archha<span>Admin</span></a>
     <div class="nav-links">
@@ -29,7 +29,7 @@
       <div class="admin-login-copy">
         <div class="kicker">Admin command center</div>
         <h1>Products, orders, and enquiries.</h1>
-        <p>Archha Admin keeps the ecommerce demo tidy with a focused product editor, live operational tables, and quick status controls for daily store work.</p>
+        <p>Archha Admin keeps ecommerce operations tidy with a focused product editor, live operational tables, and quick status controls for daily store work.</p>
         <div class="admin-login-metrics" aria-label="Admin capabilities">
           <div>
             <strong>Catalog</strong>
@@ -51,16 +51,16 @@
           <span class="admin-title-chip">PIN</span>
           <div>
             <h2>Open Admin Panel</h2>
-            <p>Use the backend demo credentials.</p>
+            <p>Use your configured admin credentials.</p>
           </div>
         </div>
         <div class="field">
           <label for="adminPin">Admin PIN</label>
-          <input id="adminPin" name="pin" required inputmode="numeric" autocomplete="one-time-code" placeholder="9999" />
+          <input id="adminPin" name="pin" required inputmode="numeric" autocomplete="one-time-code" placeholder="Admin PIN" />
         </div>
         <div class="field">
           <label for="adminApiBase">Backend API</label>
-          <input id="adminApiBase" name="apiBase" type="url" value="http://localhost:5000/api" />
+          <input id="adminApiBase" name="apiBase" value="/api" />
         </div>
         <button type="submit">Open Dashboard</button>
       </form>
@@ -97,7 +97,7 @@
 
         <div class="admin-sidebar-note">
           <span>API endpoint</span>
-          <strong id="adminApiLabel">localhost:5000/api</strong>
+          <strong id="adminApiLabel">/api</strong>
           <p>Session token is stored in this browser only.</p>
         </div>
       </aside>
@@ -312,7 +312,7 @@
     </section>
   </main>
 
-  <footer class="footer">Copyright 2026 Archha Grocery. Admin demo.</footer>
+  <footer class="footer">Copyright 2026 Archha Grocery. Admin operations.</footer>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script src="assets/api.js"></script>
   <script src="assets/admin.js"></script>

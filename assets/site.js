@@ -50,8 +50,8 @@ async function loadProductsFromApi() {
     products = fetchedProducts.length ? fetchedProducts : products;
     if (fetchedBundle) Object.assign(festivalBundle, fetchedBundle);
     catalog = [...products, festivalBundle];
-  } catch {
-    // Static HTML still works when the backend is not running.
+  } catch (error) {
+    showToast(error.message || "Product API unavailable.", "error");
   }
 }
 
@@ -299,8 +299,8 @@ async function addToCart(productIdOrName) {
   if (getAuthToken()) {
     try {
       await api.cart.add(getAuthToken(), product.id, 1);
-    } catch {
-      showToast("Cart saved locally. Start backend to save it on server.");
+    } catch (error) {
+      showToast(error.message || "Cart sync failed.", "error");
     }
   }
 }
@@ -319,8 +319,8 @@ async function updateCartQuantity(productId, qty) {
   if (getAuthToken()) {
     try {
       await api.cart.update(getAuthToken(), productId, nextQty);
-    } catch {
-      showToast("Quantity updated locally. Backend sync failed.");
+    } catch (error) {
+      showToast(error.message || "Cart sync failed.", "error");
     }
   }
 }
@@ -334,8 +334,8 @@ async function removeFromCart(productId) {
   if (getAuthToken()) {
     try {
       await api.cart.remove(getAuthToken(), productId);
-    } catch {
-      showToast("Product removed locally. Backend sync failed.");
+    } catch (error) {
+      showToast(error.message || "Cart sync failed.", "error");
     }
   }
 }
@@ -463,17 +463,13 @@ function initProductDetail() {
 }
 
 async function loadReviews(productId) {
-  let reviews = getLocalReviews(productId);
   try {
     const result = await api.reviews.list(productId);
-    if (Array.isArray(result.reviews)) {
-      const ids = new Set(reviews.map(review => review.id));
-      reviews = reviews.concat(result.reviews.filter(review => !ids.has(review.id)));
-    }
-  } catch {
-    // Local reviews keep product pages interactive without the backend.
+    return Array.isArray(result.reviews) ? result.reviews : [];
+  } catch (error) {
+    showToast(error.message || "Reviews could not be loaded.", "error");
+    return [];
   }
-  return reviews;
 }
 
 async function renderProductReviews(productId) {
@@ -597,11 +593,14 @@ async function renderProductReviews(productId) {
       comment: payload.comment,
       createdAt: new Date().toISOString()
     };
-    saveLocalReview(review);
     try {
-      await api.reviews.create(review);
-    } catch {
-      // Local review is already saved.
+      const result = await api.reviews.create(review);
+      saveLocalReview(result.review || review);
+    } catch (error) {
+      setFormMessage(form, error.message || "Review could not be saved.", "error");
+      showToast(error.message || "Review could not be saved.", "error");
+      setBusy(submitButton, false);
+      return;
     }
     saveNotification("Review saved", `Your ${review.rating}/5 review was added.`, "success");
     showToast("Review saved.", "success");
@@ -678,18 +677,12 @@ function initCoupon() {
       const result = await api.coupons.validate(code, subtotal);
       if (!result.valid) throw new Error(result.message);
       localStorage.setItem("archhaCoupon", result.code);
-      setFormMessage(form, "Coupon applied through backend demo.", "success");
-      showToast("Coupon applied on backend demo.", "success");
-    } catch {
-      if (code === "GROCERY10") {
-        localStorage.setItem("archhaCoupon", code);
-        setFormMessage(form, "Coupon applied locally because backend was unavailable.", "success");
-        showToast("Coupon applied locally.", "success");
-      } else {
-        localStorage.removeItem("archhaCoupon");
-        setFormMessage(form, "Invalid coupon. Use GROCERY10 for 10% off.", "error");
-        showToast("Use GROCERY10 for 10% off.", "error");
-      }
+      setFormMessage(form, "Coupon applied.", "success");
+      showToast("Coupon applied.", "success");
+    } catch (error) {
+      localStorage.removeItem("archhaCoupon");
+      setFormMessage(form, error.message || "Invalid coupon.", "error");
+      showToast(error.message || "Invalid coupon.", "error");
     } finally {
       setBusy(submitButton, false);
     }
@@ -745,19 +738,26 @@ function initCheckoutForm() {
     let orderId = `ARCHHA-${Date.now().toString().slice(-6)}`;
     let savedToBackend = false;
 
-    if (getAuthToken()) {
-      try {
-        await syncLocalCartToBackend();
-        const result = await api.orders.create(getAuthToken(), {
-          deliveryAddress,
-          couponCode: localStorage.getItem("archhaCoupon") || ""
-        });
-        orderId = result.order.id;
-        savedToBackend = true;
-      } catch (error) {
-        setFormMessage(form, error.message || "Backend order failed. Saving local demo order.", "error");
-        showToast("Backend order failed. Saving local demo order.", "error");
-      }
+    if (!getAuthToken()) {
+      setFormMessage(form, "Login is required before checkout.", "error");
+      showToast("Login is required before checkout.", "error");
+      setBusy(submitButton, false);
+      return;
+    }
+
+    try {
+      await syncLocalCartToBackend();
+      const result = await api.orders.create(getAuthToken(), {
+        deliveryAddress,
+        couponCode: localStorage.getItem("archhaCoupon") || ""
+      });
+      orderId = result.order.id;
+      savedToBackend = true;
+    } catch (error) {
+      setFormMessage(form, error.message || "Order could not be placed.", "error");
+      showToast(error.message || "Order could not be placed.", "error");
+      setBusy(submitButton, false);
+      return;
     }
 
     const order = {
@@ -833,11 +833,16 @@ function updateLocalOrder(orderId, patch) {
 }
 
 async function cancelOrder(orderId) {
+  if (!getAuthToken()) {
+    showToast("Login is required to cancel orders.", "error");
+    return;
+  }
   if (getAuthToken()) {
     try {
       await api.orders.cancel(getAuthToken(), orderId, "Customer requested cancellation");
-    } catch {
-      showToast("Backend cancel unavailable. Updated locally.", "info");
+    } catch (error) {
+      showToast(error.message || "Order cancellation failed.", "error");
+      return;
     }
   }
   updateLocalOrder(orderId, {
@@ -855,11 +860,16 @@ async function cancelOrder(orderId) {
 }
 
 async function requestReturn(orderId) {
+  if (!getAuthToken()) {
+    showToast("Login is required to request returns.", "error");
+    return;
+  }
   if (getAuthToken()) {
     try {
       await api.orders.requestReturn(getAuthToken(), orderId, "Customer requested return");
-    } catch {
-      showToast("Backend return unavailable. Updated locally.", "info");
+    } catch (error) {
+      showToast(error.message || "Return request failed.", "error");
+      return;
     }
   }
   updateLocalOrder(orderId, {
@@ -909,11 +919,12 @@ async function loadVisibleOrders() {
     try {
       const result = await api.orders.list(getAuthToken());
       if (Array.isArray(result.orders)) return result.orders.map(normalizeOrder);
-    } catch {
-      showToast("Backend orders unavailable. Showing local orders.", "info");
+    } catch (error) {
+      showToast(error.message || "Orders could not be loaded.", "error");
+      return [];
     }
   }
-  return getLocalOrders().map(normalizeOrder);
+  return [];
 }
 
 async function renderOrdersPage() {
@@ -925,7 +936,7 @@ async function renderOrdersPage() {
   const orders = await loadVisibleOrders();
   if (summary) {
     const noun = orders.length === 1 ? "order" : "orders";
-    summary.textContent = orders.length ? `${orders.length} ${noun} available for this demo account.` : "No orders have been placed in this browser yet.";
+    summary.textContent = orders.length ? `${orders.length} ${noun} available for this account.` : "No orders have been placed yet.";
   }
 
   list.innerHTML = orders.length ? orders.map(order => `
@@ -969,8 +980,8 @@ async function renderOrderConfirmationPage() {
     try {
       const result = await api.orders.list(getAuthToken());
       if (Array.isArray(result.orders)) orders = result.orders.map(normalizeOrder).concat(localOrders);
-    } catch {
-      // Local confirmation remains available without the backend.
+    } catch (error) {
+      showToast(error.message || "Order confirmation could not be refreshed.", "error");
     }
   }
 
@@ -999,7 +1010,7 @@ async function renderOrderConfirmationPage() {
     <div class="success-box confirmation-card">
       <span class="tag static-tag">${order.status}</span>
       <h2>Thank you. Your order is confirmed.</h2>
-      <p>Order ID <strong>${order.id}</strong> was placed on ${getOrderDate(order)}. ${order.savedToBackend ? "It was saved in the backend demo." : "It was saved locally in this browser."}</p>
+      <p>Order ID <strong>${order.id}</strong> was placed on ${getOrderDate(order)}.</p>
       <div class="actions">
         <a class="btn btn-dark" href="orders.html">View Orders</a>
         <a class="btn btn-primary" href="shop.html">Continue Shopping</a>
@@ -1023,36 +1034,47 @@ function initRegisterForm() {
   const status = document.getElementById("registerStatus");
   if (!form) return;
 
-  form.addEventListener("submit", event => {
+  form.addEventListener("submit", async event => {
     event.preventDefault();
+    const submitButton = form.querySelector("button[type='submit']");
+    setBusy(submitButton, true, "Creating...");
     const payload = Object.fromEntries(new FormData(form).entries());
     const phone = String(payload.phone || "").trim();
     if (!/^[0-9]{10}$/.test(phone)) {
       setFormMessage(form, "Enter a valid 10 digit mobile number.", "error");
       showToast("Enter a valid 10 digit mobile number.", "error");
+      setBusy(submitButton, false);
       return;
     }
 
-    const user = {
-      fullName: payload.fullName,
-      phone,
-      city: payload.city,
-      area: payload.area || "",
-      mode: "local",
-      registeredAt: new Date().toISOString()
-    };
+    let user;
+    try {
+      const result = await api.auth.register({ ...payload, phone });
+      user = {
+        ...(result.user || payload),
+        phone,
+        registeredAt: new Date().toISOString()
+      };
+    } catch (error) {
+      setFormMessage(form, error.message || "Account could not be created.", "error");
+      showToast(error.message || "Account could not be created.", "error");
+      setBusy(submitButton, false);
+      return;
+    }
+
     localStorage.setItem("archhaUser", JSON.stringify(user));
     form.reset();
+    setBusy(submitButton, false);
     status?.classList.remove("hidden");
     if (status) {
       status.innerHTML = `
         <h2>Account created.</h2>
-        <p><strong>${user.fullName}</strong> is registered locally for demo checkout and order tracking.</p>
+        <p><strong>${user.fullName}</strong> is registered for checkout and order tracking.</p>
         <a class="btn btn-dark" href="shop.html">Start Shopping</a>
       `;
     }
     saveNotification("Account created", `${user.fullName} registered successfully.`, "success");
-    showToast("Demo account created.", "success");
+    showToast("Account created.", "success");
   });
 }
 
@@ -1080,17 +1102,20 @@ function initPhoneLogin() {
     pendingPhone = phone;
     try {
       const result = await api.auth.requestOtp(phone);
-      setFormMessage(phoneForm, "OTP generated by backend demo.", "success");
-      showToast(`OTP generated by backend. Use ${result.demoOtp || "your SMS OTP"}.`, "success");
-    } catch {
-      setFormMessage(phoneForm, "Backend not running. Continuing with local demo OTP.", "error");
-      showToast("Backend not running. Use local demo OTP 123456.", "info");
-    } finally {
-      setBusy(submitButton, false);
+      const expiryMinutes = Math.max(1, Math.round(Number(result.expiresInSeconds || 600) / 60));
+      setFormMessage(
+        phoneForm,
+        result.devOtp ? `Development OTP: ${result.devOtp}` : `OTP sent successfully. It expires in ${expiryMinutes} minutes.`,
+        "success"
+      );
+      showToast("OTP sent successfully.", "success");
+      phoneForm.classList.add("hidden");
+      otpForm.classList.remove("hidden");
+    } catch (error) {
+      setFormMessage(phoneForm, error.message || "OTP could not be sent.", "error");
+      showToast(error.message || "OTP could not be sent.", "error");
     }
-
-    phoneForm.classList.add("hidden");
-    otpForm.classList.remove("hidden");
+    setBusy(submitButton, false);
   });
 
   otpForm.addEventListener("submit", async event => {
@@ -1105,21 +1130,16 @@ function initPhoneLogin() {
       return;
     }
 
-    let user = null;
     try {
       const result = await api.auth.verifyOtp(pendingPhone, otp);
-      user = { phone: result.phone, token: result.token, mode: "backend", loggedInAt: new Date().toISOString() };
+      const user = { phone: result.phone, token: result.token, loggedInAt: new Date().toISOString() };
       localStorage.setItem("archhaUser", JSON.stringify(user));
       await syncLocalCartToBackend();
-    } catch {
-      if (otp !== "123456") {
-        setFormMessage(otpForm, "Invalid OTP. Use 123456 for this local demo.", "error");
-        showToast("Invalid OTP. Use 123456 for this local demo.", "error");
-        setBusy(submitButton, false);
-        return;
-      }
-      user = { phone: pendingPhone, mode: "local", loggedInAt: new Date().toISOString() };
-      localStorage.setItem("archhaUser", JSON.stringify(user));
+    } catch (error) {
+      setFormMessage(otpForm, error.message || "Invalid OTP.", "error");
+      showToast(error.message || "Invalid OTP.", "error");
+      setBusy(submitButton, false);
+      return;
     }
 
     setBusy(submitButton, false);
@@ -1127,7 +1147,7 @@ function initPhoneLogin() {
     status.classList.remove("hidden");
     status.innerHTML = `
       <h2>Login successful.</h2>
-      <p>Mobile number <strong>${pendingPhone}</strong> is logged in using <strong>${user.mode}</strong> demo mode.</p>
+      <p>Mobile number <strong>${pendingPhone}</strong> is logged in.</p>
       <a class="btn btn-dark" href="shop.html">Continue Shopping</a>
     `;
   });
@@ -1202,19 +1222,19 @@ function initProductRequestForm() {
       status: String(payload.urgency).includes("Emergency") ? "URGENT" : "NEW",
       createdAt: new Date().toISOString()
     };
-    saveProductRequest(request);
-
-    let backendSaved = false;
     try {
-      await api.productRequests.create(request);
-      backendSaved = true;
-    } catch {
-      // Request remains saved locally.
+      const result = await api.productRequests.create(request);
+      saveProductRequest(result.request || request);
+    } catch (error) {
+      setFormMessage(form, error.message || "Product request could not be sent.", "error");
+      showToast(error.message || "Product request could not be sent.", "error");
+      setBusy(submitButton, false);
+      return;
     }
 
     form.reset();
     setBusy(submitButton, false);
-    setFormMessage(form, `${backendSaved ? "Backend" : "Local"} emergency request saved: ${request.id}.`, "success");
+    setFormMessage(form, `Emergency request saved: ${request.id}.`, "success");
     saveNotification("Product request sent", `${request.productName} request was saved as ${request.status}.`, request.status === "URGENT" ? "error" : "info");
     showToast("Emergency product request sent.", "success");
     renderProductRequests();
@@ -1224,27 +1244,28 @@ function initProductRequestForm() {
 }
 
 function initForms() {
-  document.querySelectorAll("[data-demo-form]").forEach(form => {
+  document.querySelectorAll("[data-enquiry-form]").forEach(form => {
     form.addEventListener("submit", async event => {
       event.preventDefault();
       const submitButton = form.querySelector("button[type='submit']");
       setBusy(submitButton, true, "Saving...");
       const payload = Object.fromEntries(new FormData(form).entries());
       let enquiry = null;
-      let backendSaved = false;
 
       try {
         const result = await api.enquiries.create(payload);
         enquiry = result.enquiry;
-        backendSaved = true;
-      } catch {
-        enquiry = saveLocalEnquiry(payload);
+      } catch (error) {
+        setFormMessage(form, error.message || "Enquiry could not be saved.", "error");
+        showToast(error.message || "Enquiry could not be saved.", "error");
+        setBusy(submitButton, false);
+        return;
       }
 
       form.reset();
       setBusy(submitButton, false);
-      setFormMessage(form, `${backendSaved ? "Backend" : "Local"} enquiry saved: ${enquiry.id}.`, "success");
-      showToast(`${backendSaved ? "Backend" : "Local"} enquiry saved: ${enquiry.id}.`, "success");
+      setFormMessage(form, `Enquiry saved: ${enquiry.id}.`, "success");
+      showToast(`Enquiry saved: ${enquiry.id}.`, "success");
     });
   });
 }

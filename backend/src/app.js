@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
+const path = require("path");
 const { env } = require("./config/env");
 const routes = require("./routes");
 const { notFound } = require("./middleware/notFound");
@@ -14,6 +15,7 @@ app.use(express.json({ limit: "1mb" }));
 app.use(morgan(env.nodeEnv === "production" ? "combined" : "dev"));
 
 app.use("/api", routes);
+app.use(express.static(path.join(__dirname, "..", "..")));
 app.use(notFound);
 app.use(errorHandler);
 

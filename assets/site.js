@@ -1788,6 +1788,67 @@ function initNavSearch() {
   });
 }
 
+function initCompactNavigation() {
+  document.querySelectorAll(".nav").forEach(nav => {
+    if (nav.dataset.compactReady === "true") return;
+    nav.dataset.compactReady = "true";
+
+    const links = nav.querySelector(".nav-links");
+    const actions = nav.querySelector(".nav-actions");
+    if (!links || !actions) return;
+
+    const homeLink = links.querySelector('[data-nav="home"], a[href="index.html"]');
+    const shopLink = links.querySelector('[data-nav="shop"], a[href="shop.html"]');
+
+    if (homeLink) {
+      homeLink.classList.add("nav-icon-link", "nav-home-icon-link", "nav-shake-link");
+      homeLink.setAttribute("aria-label", "Home");
+      homeLink.innerHTML = `<span class="nav-home-icon" aria-hidden="true"></span><span class="nav-icon-text">Home</span>`;
+    }
+
+    if (shopLink) {
+      shopLink.classList.add("nav-icon-link", "nav-shop-icon-link", "nav-shake-link");
+      shopLink.setAttribute("aria-label", "Shop");
+      shopLink.innerHTML = `<span class="nav-shop-icon" aria-hidden="true"></span><span class="nav-icon-text">Shop</span>`;
+    }
+
+    links.querySelectorAll('[data-nav="profile"], [data-nav="wishlist"], [data-nav="about"], [data-nav="login"], [data-nav="orders"], a[href="orders.html"]').forEach(link => {
+      link.remove();
+    });
+
+    const menu = document.createElement("div");
+    menu.className = "nav-more-menu";
+    menu.innerHTML = `
+      <button class="nav-more-toggle" type="button" aria-label="Open more menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="nav-more-panel" role="menu">
+        <a role="menuitem" href="profile.html">Profile</a>
+        <a role="menuitem" href="wishlist.html">Wishlist</a>
+        <a role="menuitem" href="about.html">About</a>
+        <a role="menuitem" href="orders.html">Order</a>
+      </div>
+    `;
+
+    const toggle = menu.querySelector(".nav-more-toggle");
+    toggle.addEventListener("click", event => {
+      event.stopPropagation();
+      const isOpen = menu.classList.toggle("open");
+      toggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    });
+
+    actions.prepend(menu);
+  });
+
+  document.addEventListener("click", event => {
+    document.querySelectorAll(".nav-more-menu.open").forEach(menu => {
+      if (menu.contains(event.target)) return;
+      menu.classList.remove("open");
+      menu.querySelector(".nav-more-toggle")?.setAttribute("aria-expanded", "false");
+    });
+  });
+}
+
 async function renderDynamicBanners() {
   const root = document.getElementById("dynamicBanner");
   if (!root || !api?.storefront) return;
@@ -1901,18 +1962,19 @@ function initAnalytics() {
 }
 
 function initFloatingRequestButton() {
-  if (document.body.dataset.page === "admin" || document.querySelector(".floating-request-btn")) return;
+  if (["admin", "request"].includes(document.body.dataset.page) || document.querySelector(".floating-request-btn")) return;
 
   const link = document.createElement("a");
   link.className = "floating-request-btn";
   link.href = "request-product.html";
-  link.setAttribute("aria-label", "Request product");
+  link.setAttribute("aria-label", "Emergency product order");
+  link.title = "Emergency product order";
   link.innerHTML = `
     <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
       <path d="M3.5 20.5 21 3l-6.2 18-3.7-8.1L3.5 20.5Z"></path>
       <path d="m11.1 12.9 9.9-9.9"></path>
     </svg>
-    <span>Request product</span>
+    <span>Emergency order</span>
   `;
   document.body.append(link);
 }
@@ -1927,6 +1989,7 @@ function initActiveNav() {
 document.addEventListener("DOMContentLoaded", async () => {
   await loadProductsFromApi();
   updateCartCount();
+  initCompactNavigation();
   initActiveNav();
   initNavLocationTab();
   initNavSearch();
@@ -1950,6 +2013,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   renderOrderConfirmationPage();
   renderDynamicBanners();
   renderPersonalizationRail();
+  initFloatingRequestButton();
   initLazyMedia();
   initAnalytics();
 });

@@ -48,6 +48,39 @@
     }
   };
 
+  const storefront = {
+    home() {
+      return request("/storefront/home");
+    }
+  };
+
+  const personalization = {
+    get(payload = {}) {
+      return request("/personalization", {
+        method: "POST",
+        body: payload
+      });
+    }
+  };
+
+  const analytics = {
+    events(events) {
+      return request("/analytics/events", {
+        method: "POST",
+        body: { events: Array.isArray(events) ? events : [events] }
+      });
+    },
+    summary() {
+      return request("/analytics/summary");
+    }
+  };
+
+  const payments = {
+    methods() {
+      return request("/payments/methods");
+    }
+  };
+
   const auth = {
     register(payload) {
       return request("/auth/register", {
@@ -270,6 +303,10 @@
     getBaseUrl,
     setBaseUrl,
     request,
+    storefront,
+    personalization,
+    analytics,
+    payments,
     products,
     auth,
     cart,

@@ -2,6 +2,71 @@ let products = [];
 let catalog = [];
 let activeCategory = "all";
 const api = window.ArchhaApi;
+const analyticsQueue = [];
+
+function getSessionId() {
+  let sessionId = sessionStorage.getItem("archhaSessionId");
+  if (!sessionId) {
+    sessionId = `SESSION-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
+    sessionStorage.setItem("archhaSessionId", sessionId);
+  }
+  return sessionId;
+}
+
+function enqueueAnalytics(event) {
+  analyticsQueue.push({
+    sessionId: getSessionId(),
+    page: document.body.dataset.page || "unknown",
+    path: window.location.pathname,
+    ...event
+  });
+  if (analyticsQueue.length >= 3) flushAnalytics();
+}
+
+function setupGoogleAnalytics(measurementId) {
+  if (!measurementId || window.gtag) return;
+  const script = document.createElement("script");
+  script.async = true;
+  script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(measurementId)}`;
+  document.head.append(script);
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function gtag() {
+    window.dataLayer.push(arguments);
+  };
+  window.gtag("js", new Date());
+  window.gtag("config", measurementId);
+}
+
+async function flushAnalytics() {
+  if (!analyticsQueue.length || !api?.analytics) return;
+  const events = analyticsQueue.splice(0, analyticsQueue.length);
+  try {
+    await api.analytics.events(events);
+    if (window.gtag) {
+      events.forEach(event => window.gtag("event", event.type, {
+        event_category: event.page,
+        event_label: event.step || event.productId || event.path,
+        value: event.value || 0
+      }));
+    }
+  } catch {
+    analyticsQueue.unshift(...events.slice(-10));
+  }
+}
+
+function getViewedProducts() {
+  try {
+    return JSON.parse(localStorage.getItem("archhaViewedProducts") || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function saveViewedProduct(productId) {
+  if (!productId) return;
+  const viewed = [productId, ...getViewedProducts().filter(id => id !== productId)].slice(0, 12);
+  localStorage.setItem("archhaViewedProducts", JSON.stringify(viewed));
+}
 
 function formatMoney(amount) {
   return `Rs. ${amount}`;
@@ -129,6 +194,25 @@ function getCart() {
 function saveCart(cart) {
   localStorage.setItem("archhaCart", JSON.stringify(cart));
   updateCartCount();
+}
+
+function getPersonalizationContext() {
+  const cart = getCart();
+  const wishlist = getWishlist();
+  const viewed = getViewedProducts();
+  const preferredCategories = [
+    ...cart.map(item => catalog.find(product => product.id === item.id)?.type),
+    ...viewed.map(id => catalog.find(product => product.id === id)?.type)
+  ].filter(Boolean);
+
+  return {
+    sessionId: getSessionId(),
+    cartProductIds: cart.map(item => item.id),
+    wishlistIds: wishlist,
+    viewedProductIds: viewed,
+    searchTerms: getSearchHistory().map(item => item.query).slice(0, 8),
+    preferredCategories: [...new Set(preferredCategories)]
+  };
 }
 
 function getLocationLabel(location = getSavedLocation()) {
@@ -286,6 +370,7 @@ function saveSearchHistory(query, source = "site") {
   const next = [record, ...getSearchHistory().filter(item => item.query.toLowerCase() !== cleanQuery.toLowerCase())].slice(0, 12);
   localStorage.setItem("archhaSearchHistory", JSON.stringify(next));
   api.searchHistory?.create?.(record)?.catch?.(() => {});
+  enqueueAnalytics({ type: "search", step: source, meta: { query: cleanQuery } });
   renderSearchHistoryPanel();
 }
 
@@ -388,6 +473,13 @@ async function addToCart(productIdOrName) {
   renderCart();
   renderCheckout();
   showToast(`${product.name} added to cart.`);
+  enqueueAnalytics({
+    type: "add_to_cart",
+    productId: product.id,
+    value: product.price,
+    meta: { name: product.name, quantity: 1 }
+  });
+  renderPersonalizationRail();
 
   if (getAuthToken()) {
     try {
@@ -572,6 +664,13 @@ function initProductDetail() {
     return;
   }
   document.title = `${product.name} | Archha Grocery`;
+  saveViewedProduct(product.id);
+  enqueueAnalytics({
+    type: "product_view",
+    productId: product.id,
+    value: product.price,
+    meta: { name: product.name, category: product.type }
+  });
   const displayRating = getDisplayRating(product);
 
   detailRoot.innerHTML = `
@@ -598,9 +697,11 @@ function initProductDetail() {
         <div class="card"><h3>Delivery</h3><p>Free delivery above Rs. 499. Dispatch for ready stock within 24 hours.</p></div>
       </div>
       <div class="reviews-block" id="reviewsBlock" data-product-id="${product.id}"></div>
+      <div class="personalized-rail compact" id="productRecommendations" aria-live="polite"></div>
     </div>
   `;
   renderProductReviews(product.id);
+  renderPersonalizationRail();
 }
 
 async function loadReviews(productId) {
@@ -849,6 +950,28 @@ function renderCheckout() {
   renderSummary(checkoutSummary, false);
 }
 
+async function renderPaymentTrustPanel() {
+  const root = document.getElementById("checkoutTrustPanel");
+  if (!root || !api?.payments) return;
+  try {
+    const data = await api.payments.methods();
+    root.innerHTML = `
+      <div class="trust-panel">
+        <div>
+          <span class="trust-icon" aria-hidden="true">S</span>
+          <strong>Secure checkout</strong>
+          <p>SSL-ready checkout with payment handled through ${escapeHtml(data.gateway)}. ${escapeHtml(data.pciDss)}</p>
+        </div>
+        <div class="trust-methods">
+          ${data.methods.map(method => `<span>${escapeHtml(method.label)}</span>`).join("")}
+        </div>
+      </div>
+    `;
+  } catch {
+    root.innerHTML = "";
+  }
+}
+
 function initCheckoutForm() {
   const form = document.getElementById("checkoutForm");
   const confirmation = document.getElementById("orderConfirmation");
@@ -856,11 +979,13 @@ function initCheckoutForm() {
 
   form.addEventListener("submit", async event => {
     event.preventDefault();
+    enqueueAnalytics({ type: "checkout_step", step: "submit_attempt" });
     const submitButton = form.querySelector("button[type='submit']");
     setBusy(submitButton, true, "Placing order...");
     const { rows, total } = getCartTotals();
     if (!rows.length) {
       showToast("Your cart is empty.", "error");
+      enqueueAnalytics({ type: "checkout_step", step: "empty_cart_blocked" });
       setBusy(submitButton, false);
       return;
     }
@@ -882,6 +1007,7 @@ function initCheckoutForm() {
     if (!getAuthToken()) {
       setFormMessage(form, "Login is required before checkout.", "error");
       showToast("Login is required before checkout.", "error");
+      enqueueAnalytics({ type: "checkout_step", step: "login_required" });
       setBusy(submitButton, false);
       return;
     }
@@ -894,6 +1020,7 @@ function initCheckoutForm() {
       });
       orderId = result.order.id;
       savedToBackend = true;
+      enqueueAnalytics({ type: "checkout_step", step: "order_created", value: total });
     } catch (error) {
       setFormMessage(form, error.message || "Order could not be placed.", "error");
       showToast(error.message || "Order could not be placed.", "error");
@@ -1661,6 +1788,118 @@ function initNavSearch() {
   });
 }
 
+async function renderDynamicBanners() {
+  const root = document.getElementById("dynamicBanner");
+  if (!root || !api?.storefront) return;
+  try {
+    const data = await api.storefront.home();
+    setupGoogleAnalytics(data.config?.googleAnalyticsId);
+    const banner = data.banners?.[0];
+    if (!banner) return;
+    root.innerHTML = `
+      <section class="smart-banner">
+        <div>
+          <div class="kicker">Composable storefront</div>
+          <h2>${escapeHtml(banner.title)}</h2>
+          <p>${escapeHtml(banner.text)}</p>
+        </div>
+        <a class="btn btn-primary" href="${escapeHtml(banner.href)}">${escapeHtml(banner.cta)}</a>
+      </section>
+    `;
+  } catch {
+    root.innerHTML = "";
+  }
+}
+
+async function renderPersonalizationRail() {
+  const roots = document.querySelectorAll("#homeRecommendations, #shopRecommendations, #cartRecommendations, #productRecommendations");
+  if (!roots.length || !api?.personalization) return;
+  try {
+    const data = await api.personalization.get(getPersonalizationContext());
+    const recommendations = Array.isArray(data.recommendedProducts) ? data.recommendedProducts.slice(0, 4) : [];
+    roots.forEach(root => {
+      root.innerHTML = recommendations.length ? `
+        <div class="section-head compact">
+          <div>
+            <div class="kicker">Recommended for you</div>
+            <h2>Fresh picks based on your cart and browsing.</h2>
+          </div>
+        </div>
+        <div class="recommendation-grid">
+          ${recommendations.map(product => `
+            <article class="recommendation-card">
+              <a href="product.html?id=${escapeHtml(product.id)}">
+                <span class="product-visual" aria-hidden="true">${product.icon}</span>
+                <strong>${escapeHtml(product.name)}</strong>
+                <small>${escapeHtml(product.sub || product.type)}</small>
+              </a>
+              <div>
+                <span>${formatMoney(product.price)}</span>
+                <button class="add-btn" type="button" onclick="addToCart('${escapeHtml(product.id)}')">Add</button>
+              </div>
+            </article>
+          `).join("")}
+        </div>
+      ` : "";
+    });
+  } catch {
+    roots.forEach(root => { root.innerHTML = ""; });
+  }
+}
+
+function initLazyMedia() {
+  document.querySelectorAll("img:not([loading]), iframe:not([loading])").forEach(node => {
+    node.loading = "lazy";
+  });
+
+  if (!("IntersectionObserver" in window)) return;
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add("is-visible");
+      observer.unobserve(entry.target);
+    });
+  }, { rootMargin: "120px" });
+  document.querySelectorAll(".product-card, .recommendation-card, .card").forEach(node => {
+    node.classList.add("lazy-reveal");
+    observer.observe(node);
+  });
+}
+
+function initAnalytics() {
+  enqueueAnalytics({ type: "page_view" });
+
+  let lastScrollBucket = -1;
+  window.addEventListener("scroll", () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    if (max <= 0) return;
+    const bucket = Math.round((window.scrollY / max) * 4) * 25;
+    if (bucket !== lastScrollBucket) {
+      lastScrollBucket = bucket;
+      enqueueAnalytics({ type: "session_scroll", step: `${bucket}%` });
+    }
+  }, { passive: true });
+
+  document.addEventListener("click", event => {
+    const target = event.target.closest("a, button, input, select, textarea");
+    enqueueAnalytics({
+      type: "heatmap_click",
+      meta: {
+        x: event.clientX,
+        y: event.clientY,
+        target: target ? `${target.tagName.toLowerCase()} ${target.textContent.trim().slice(0, 40)}` : "page"
+      }
+    });
+  });
+
+  window.addEventListener("beforeunload", () => {
+    if (!analyticsQueue.length || !navigator.sendBeacon || !api?.getBaseUrl) return;
+    const payload = JSON.stringify({ events: analyticsQueue.splice(0, analyticsQueue.length) });
+    navigator.sendBeacon(`${api.getBaseUrl()}/analytics/events`, new Blob([payload], { type: "application/json" }));
+  });
+  window.setInterval(flushAnalytics, 10000);
+}
+
 function initFloatingRequestButton() {
   if (document.body.dataset.page === "admin" || document.querySelector(".floating-request-btn")) return;
 
@@ -1696,6 +1935,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   renderCart();
   initCoupon();
   renderCheckout();
+  renderPaymentTrustPanel();
   initCheckoutForm();
   initPhoneLogin();
   initRegisterForm();
@@ -1708,4 +1948,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   renderNotifications();
   renderOrdersPage();
   renderOrderConfirmationPage();
+  renderDynamicBanners();
+  renderPersonalizationRail();
+  initLazyMedia();
+  initAnalytics();
 });

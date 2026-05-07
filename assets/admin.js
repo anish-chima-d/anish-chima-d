@@ -774,6 +774,9 @@ function initAdminLogin() {
   const logout = byId("adminLogoutBtn");
 
   syncApiBaseDisplay();
+  setAdminToken("admin-login-disabled");
+  showPanel();
+  loadAdminData().catch(error => showToast(error.message, "error"));
 
   form.addEventListener("submit", async event => {
     event.preventDefault();
@@ -800,21 +803,11 @@ function initAdminLogin() {
   });
 
   logout.addEventListener("click", () => {
-    localStorage.removeItem("archhaAdminToken");
-    showLogin();
-    showToast("Admin logged out.", "info");
-  });
-
-  if (getAdminToken()) {
+    setAdminToken("admin-login-disabled");
     showPanel();
-    loadAdminData().catch(error => {
-      showToast(error.message, "error");
-      localStorage.removeItem("archhaAdminToken");
-      showLogin();
-    });
-  } else {
-    showLogin();
-  }
+    loadAdminData().catch(error => showToast(error.message, "error"));
+    showToast("Admin login is disabled for now.", "info");
+  });
 }
 
 function initProductForm() {

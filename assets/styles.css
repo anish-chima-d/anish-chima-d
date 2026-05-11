@@ -487,16 +487,41 @@ a {
 }
 
 .nav-search {
-  flex: 0 0 154px;
-  max-width: 154px;
-  min-width: 118px;
-  height: 38px;
+  flex: 0 0 206px;
+  max-width: 206px;
+  min-width: 150px;
+  height: 40px;
   display: flex;
   align-items: center;
   border: 1px solid var(--line);
   border-radius: 999px;
   background: white;
   overflow: hidden;
+  position: relative;
+}
+
+.nav-search::before {
+  content: "";
+  width: 13px;
+  height: 13px;
+  margin-left: 13px;
+  border: 2px solid var(--muted);
+  border-radius: 50%;
+  flex: 0 0 auto;
+  opacity: 0.72;
+}
+
+.nav-search::after {
+  content: "";
+  position: absolute;
+  left: 27px;
+  top: 24px;
+  width: 7px;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--muted);
+  transform: rotate(45deg);
+  opacity: 0.72;
 }
 
 .nav-search input {
@@ -505,10 +530,10 @@ a {
   height: 100%;
   border: 0;
   outline: 0;
-  padding: 0 10px;
+  padding: 0 12px 0 8px;
   background: transparent;
   color: var(--ink);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .nav-search button {
@@ -525,14 +550,15 @@ a {
 }
 
 .nav-more-toggle {
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   border: 1px solid var(--line);
   border-radius: 50%;
   background: var(--surface);
   color: var(--ink);
-  display: grid;
-  place-items: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   gap: 3px;
   cursor: pointer;
 }
@@ -2763,9 +2789,9 @@ a.product-name:hover {
 
   .nav-search {
     order: 2;
-    flex: 0 0 148px;
-    max-width: 148px;
-    min-width: 132px;
+    flex: 0 0 184px;
+    max-width: 184px;
+    min-width: 150px;
     margin-left: auto;
   }
 
@@ -2899,18 +2925,15 @@ a.product-name:hover {
 
   .nav-search {
     order: 2;
-    flex: 0 0 118px;
-    width: 118px;
+    flex: 0 0 152px;
+    width: 152px;
     height: 38px;
     margin-left: auto;
   }
 
   .nav-search input {
-    padding: 0 8px;
-  }
-
-  .nav-search input::placeholder {
-    color: transparent;
+    padding-right: 10px;
+    font-size: 12px;
   }
 
   .cart-btn {

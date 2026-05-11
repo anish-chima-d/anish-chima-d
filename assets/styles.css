@@ -2905,7 +2905,8 @@ a.product-name:hover {
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
     padding: 12px 14px;
-    gap: 10px;
+    column-gap: 8px;
+    row-gap: 10px;
   }
 
   .profile-grid {
@@ -2913,6 +2914,7 @@ a.product-name:hover {
   }
 
   .brand {
+    grid-column: 1 / -1;
     font-size: 19px;
     max-width: none;
     white-space: nowrap;
@@ -2931,7 +2933,10 @@ a.product-name:hover {
   }
 
   .nav-actions {
+    grid-column: 2 / 3;
+    grid-row: 3;
     justify-self: end;
+    align-self: center;
     gap: 6px;
   }
 
@@ -2958,7 +2963,8 @@ a.product-name:hover {
   }
 
   .nav-search {
-    grid-column: 1 / -1;
+    grid-column: 1 / 2;
+    grid-row: 3;
     order: initial;
     flex: none;
     width: 100%;
@@ -2975,6 +2981,7 @@ a.product-name:hover {
 
   .nav-links {
     grid-column: 1 / -1;
+    grid-row: 2;
     order: initial;
     flex-basis: auto;
     flex-wrap: nowrap;

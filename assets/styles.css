@@ -2901,7 +2901,11 @@ a.product-name:hover {
   }
 
   .nav {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
     padding: 12px 14px;
+    gap: 10px;
   }
 
   .profile-grid {
@@ -2910,8 +2914,11 @@ a.product-name:hover {
 
   .brand {
     font-size: 19px;
-    max-width: calc(100% - 96px);
+    max-width: none;
     white-space: nowrap;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .brand-mark {
@@ -2923,12 +2930,42 @@ a.product-name:hover {
     display: none;
   }
 
+  .nav-actions {
+    justify-self: end;
+    gap: 6px;
+  }
+
+  .nav-more-toggle {
+    width: 34px;
+    height: 34px;
+  }
+
+  .location-tab {
+    width: 34px;
+    min-height: 34px;
+    padding: 0;
+    border-radius: 50%;
+  }
+
+  .location-tab span:last-child {
+    display: none;
+  }
+
+  .cart-btn {
+    min-height: 34px;
+    padding: 0 10px;
+    font-size: 12px;
+  }
+
   .nav-search {
-    order: 2;
-    flex: 0 0 152px;
-    width: 152px;
+    grid-column: 1 / -1;
+    order: initial;
+    flex: none;
+    width: 100%;
+    max-width: none;
+    min-width: 0;
     height: 38px;
-    margin-left: auto;
+    margin-left: 0;
   }
 
   .nav-search input {
@@ -2936,9 +2973,30 @@ a.product-name:hover {
     font-size: 12px;
   }
 
-  .cart-btn {
-    padding: 0 12px;
-    font-size: 13px;
+  .nav-links {
+    grid-column: 1 / -1;
+    order: initial;
+    flex-basis: auto;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 0 0 4px;
+    scrollbar-width: none;
+  }
+
+  .nav-links::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nav-links a:not(.nav-icon-link) {
+    min-height: 34px;
+    padding: 0 11px;
+    font-size: 12px;
+  }
+
+  .nav-icon-link {
+    width: 38px;
+    height: 38px;
+    flex: 0 0 38px;
   }
 
   .hero {
